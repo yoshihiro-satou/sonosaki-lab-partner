@@ -21,9 +21,8 @@ import styles from "@/app/partner/partner.module.css";
  *
  * 🔴 なぜ枠の明滅を GSAP ではなく CSS の keyframes でやるのか＝
  *    box-shadow を毎フレーム 計算し直すのは重い。
- *    明滅は決め打ちの段階アニメーション（`steps`）で足りるので、
- *    ブラウザに任せて GSAP は**合図（クラスを付ける）だけ**にする。
- *    行の動きだけが GSAP の担当。
+ *    明滅は決め打ちのキーフレームで足りるので、ブラウザに任せて
+ *    GSAP は**合図（クラスを付ける）だけ**にする。行の動きだけが GSAP の担当。
  *
  * ♿ 動きが苦手な設定のときは、明滅も立ち上がりもせず、最初から灯った状態で出す
  *    （明滅は光に過敏な人の負担になるため、ここは外せる装飾ではなく既定）。
@@ -49,13 +48,20 @@ export default function RevealPanel({
       .then(({ gsap, ScrollTrigger }) => {
         if (cancelled || !ref.current) return;
 
-        const panels = ref.current.querySelectorAll<HTMLElement>(`.${styles.panel}`);
+        /* ネオン管にする枠＝一覧の枠と、作ったものの枠。
+           🔴 作ったものの枠の**中身は1行ずつ動かさない。**
+              タブで中身が入れ替わる所なので、GSAP が opacity:0 を書いた要素を
+              React が差し替えると、インラインの値が宙に浮いて事故りやすい。
+              あそこは「管が点く」だけにして、中身は素直に出す。 */
+        const panels = ref.current.querySelectorAll<HTMLElement>(
+          `.${styles.panel}, .${styles.switchPanel}`,
+        );
         const items = ref.current.querySelectorAll<HTMLElement>(`.${styles.revealItem}`);
-        if (!items.length) return;
+        if (!panels.length && !items.length) return;
 
         // ここで初めて隠す・消す（上のコメントの理由）
         panels.forEach((p) => p.classList.add(styles.panelOff));
-        gsap.set(items, { opacity: 0, y: 28 });
+        if (items.length) gsap.set(items, { opacity: 0, y: 28 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -77,26 +83,28 @@ export default function RevealPanel({
         });
 
         // ② 管が安定してから行が起きる。
-        //    0.52 秒＝明滅（0.72秒）の2回目の瞬きが終わるあたり。
+        //    0.52 秒＝明滅（0.8秒）の2回目の瞬きが終わるあたり。
         //    完全に終わるのを待つと間が空きすぎ、早すぎると明滅に埋もれる。
-        tl.to(
-          items,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.62,
-            ease: "power3.out",
-            // 🔴 0.07 秒 刻み。7項目で 0.49 秒＝読み始めを待たせない上限あたり。
-            stagger: 0.07,
-          },
-          0.52,
-        );
+        if (items.length) {
+          tl.to(
+            items,
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.62,
+              ease: "power3.out",
+              // 🔴 0.07 秒 刻み。7項目で 0.49 秒＝読み始めを待たせない上限あたり。
+              stagger: 0.07,
+            },
+            0.52,
+          );
+        }
 
         cleanup = () => {
           tl.scrollTrigger?.kill();
           tl.kill();
           // 消える前に必ず「見える・灯っている」状態へ戻す
-          gsap.set(items, { clearProps: "opacity,transform" });
+          if (items.length) gsap.set(items, { clearProps: "opacity,transform" });
           panels.forEach((p) =>
             p.classList.remove(styles.panelOff, styles.panelOn),
           );

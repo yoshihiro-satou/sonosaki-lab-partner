@@ -11,8 +11,8 @@ import InkBackdrop from "@/components/partner/InkBackdrop";
 /**
  * 制作会社さま向けページ（sonosaki-lab.com/partner）
  *
- * 🔴 このページに出す数字は「測った日・測り方・回数つき」で記録したものだけ。
- *    思い出しで書かない。
+ * 🔴 このページに出す数字は、社内の台帳に「測った日・測り方・回数つき」で
+ *    記録したものからしか取らない。思い出しで書かない。
  * ⚠️ 他ページで測った速度の値を、このページの値として流用しない。
  *    ページが違えば読み込むものが違うので、別の数字になる。
  */
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
      （書くと「…｜Sonosaki Lab.｜Sonosaki Lab.」と二重になる） */
   title: "実装パートナーとして",
   description:
-    "Web制作会社・デザイン会社さま向けのフロントエンド実装パートナーです。Figmaからのコーディング、既存サイトの改修、アニメーション、レスポンシブ対応まで。1ページ分の実装から 税込 ¥30,000。",
+    "Web制作会社・デザイン会社さま向けのフロントエンド実装パートナーです。Figmaからのコーディング、既存サイトの改修、アニメーション、レスポンシブ対応まで。1ページ分の実装 税込 ¥30,000〜。",
   alternates: { canonical: "https://sonosaki-lab.com/partner" },
 };
 
@@ -186,27 +186,29 @@ export default function PartnerPage() {
           ]}
         />
 
-        <ViewportFrame>
+        <RevealPanel>
+          <ViewportFrame>
           {/* 🔴 枠の中は「解説」ではなく「実際のサイトらしい中身」を置く。
              説明文を並べると、デモが技術の講義になる。見せたいのは挙動のほう。 */}
-          <div className={`${styles.card} ${styles.cardWide}`}>
+          <div className={`${styles.card} ${styles.cardWide} ${styles.revealItem}`}>
             <p className={styles.mockEyebrow}>架空の店舗サイト</p>
             <h3>髪を切るだけの場所にしない</h3>
             <p>駅から歩いて3分。予約は前日まで受け付けています。</p>
           </div>
-          <div className={styles.card}>
+          <div className={`${styles.card} ${styles.revealItem}`}>
             <h3>メニューと料金</h3>
             <p>カット ¥4,800／カラー ¥7,200／トリートメント ¥3,000</p>
           </div>
-          <div className={styles.card}>
+          <div className={`${styles.card} ${styles.revealItem}`}>
             <h3>アクセス</h3>
             <p>宮城県大崎市◯◯ 1-2-3／水曜定休／10:00〜19:00</p>
           </div>
-          <div className={styles.card}>
+          <div className={`${styles.card} ${styles.revealItem}`}>
             <h3>ご予約</h3>
             <p>電話、LINE、フォームのどれでも受け付けています。</p>
           </div>
-        </ViewportFrame>
+          </ViewportFrame>
+        </RevealPanel>
 
         <p className={styles.demoNote}>
           画面の幅ではなく、<b>枠そのものの幅</b>でレイアウトを切り替えています。
@@ -235,7 +237,9 @@ export default function PartnerPage() {
             "呼べば例外で落ちて、タブの切り替え自体が動かなくなるためです。",
           ]}
         />
-        <WorkSwitch works={WORKS} />
+        <RevealPanel>
+          <WorkSwitch works={WORKS} />
+        </RevealPanel>
       </section>
 
       {/* ═══ 役割の分け方 ═══ */}
@@ -349,7 +353,7 @@ export default function PartnerPage() {
             <h3 className={styles.revealItem}>金額</h3>
             <ul>
               <li className={styles.revealItem}>
-                <b>1ページ分の実装から 税込 ¥30,000</b>
+                <b>1ページ分の実装 税込 ¥30,000〜</b>
               </li>
               <li className={styles.revealItem}>
                 部品ひとつ、一画面だけ、といった小さい単位は、範囲を伺って別途お見積り
@@ -384,26 +388,27 @@ export default function PartnerPage() {
 
       {/* ═══ 佐藤について ═══ */}
       <section className={styles.section}>
-        <RevealHeading className={styles.sectionTitle} text="佐藤について" />
+        <RevealHeading className={styles.sectionTitle} text="私について" />
 
-        <div className={styles.about}>
-          <p>
+        <RevealPanel className={styles.about}>
+          <p className={styles.revealItem}>
             はじめまして。Sonosaki Lab. の佐藤です。宮城県で、一人でやっています。
           </p>
-          <p>
+          <p className={styles.revealItem}>
             制作会社さんからいただいたデザインを、ブラウザで動くところまで持っていく。
-            それが仕事の中身です。再委託はしません。手を動かすのは最初から最後まで自分です。
+            それが仕事の中身です。再委託はしません。最初から最後まで私が、
+            きちんとコードまでチェックしながら行います（私の勉強も含みます）。
           </p>
-          <p>
+          <p className={styles.revealItem}>
             屋号を立てたのは 2026 年 7 月なので、受託の数はまだ並べられません。
             そこは正直に書いておきます。代わりに、いま公開しているサイトと、実際に測った数字を
             見ていただけるようにしました。上の「作ったもの」が、そのまま手の内です。
           </p>
-          <p>
+          <p className={styles.revealItem}>
             デザインは出来ているのに実装する人が足りない。案件が重なって、コーディングだけ
             外に出したい。そういうときの受け皿として、このページを作りました。
           </p>
-        </div>
+        </RevealPanel>
 
         <p className={styles.ctaWrap}>
           <a className={styles.cta} href="mailto:yoshihirock0710@gmail.com">

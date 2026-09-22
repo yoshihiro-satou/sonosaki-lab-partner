@@ -499,10 +499,22 @@
   /* 🔴 この名前を View Transitions が掴む。名前が無いと画面ごと白く差し替わり、
      「非同期で要素が移った」ことが伝わらない。 */
   view-transition-name: partner-work;
-  padding: 20px;
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  background: var(--bg-raised);
+  padding: 26px 24px;
+  /* 一覧の枠と同じネオン管にする＝ページの中で「枠＝光る」の決まりを1本にする。
+     ここだけ別の見せ方にすると、同じ役目の箱が2種類あることになる。 */
+  border: 1px solid rgba(var(--neon-gold), 0.75);
+  border-radius: 14px;
+  background: linear-gradient(
+    160deg,
+    rgba(14, 33, 82, 0.86),
+    rgba(8, 20, 56, 0.92)
+  );
+  box-shadow:
+    inset 0 0 34px rgba(var(--neon-gold), 0.12),
+    inset 0 1px 0 rgba(var(--neon), 0.4),
+    0 0 0 1px rgba(var(--neon-gold), 0.18),
+    0 0 30px rgba(var(--neon-gold), 0.24),
+    0 0 84px rgba(var(--neon-gold), 0.13);
 }
 .switchPanel h3 {
   margin: 0 0 12px;
