@@ -1,0 +1,624 @@
+/* ─────────────────────────────────────────────────────────────
+   制作会社さま向けページ（sonosaki-lab.com/partner）— 濃紺＋金
+
+   🔴 サイト本体（明るい珊瑚色）とは**わざと変えている。** 読み手が違うため。
+      本体のトップ＝お店の経営者。このページ＝実装者を審査する技術の担当者。
+      同じ配色で並べると、どちらの相手にも中途半端になる。
+
+   📌 経緯＝最初は黒地で組んだが「暗すぎる」と判定され、参考にする絵を決めて
+      **画素から色を取り直した**。引き継いだのは4つ＝①濃い青の地
+      ②斜めのストライプ ③金の差し色 ④極太で少し斜めの見出し。
+
+   🔴 コントラスト比は全部 WCAG 2.1 の相対輝度で実測した値（2026-09-22）。
+      目分量で「たぶん読める」を通していない。
+   ───────────────────────────────────────────────────────────── */
+.page {
+  /* 🎨 配色。
+     参考にした絵から**実際の画素を取って**決めた色（目分量で拾わない）。
+     絵の面積上位＝#204090（20.2%）・#ffffff（12.2%）・#001050（7.5%）、
+     差し色の金は #e9a802。この3つの関係をそのまま持ってくる。
+     🔴 ただし #204090 をそのまま地にすると補助文が AA を割るので、
+        1段 沈めた #16316f を地にした（下の比率はすべて WCAG 2.1 で実測）。 */
+  --bg: #16316f; /* 地＝濃い青。参考画像の主色を1段 沈めたもの */
+  --bg-deep: #102554; /* 斜めストライプの暗いほう */
+  --bg-raised: #1b3a80; /* カード・枠の中＝地より少し明るい面 */
+  --text: #eaf0ff; /* 対 地 10.81:1 AAA */
+  --muted: #a8bbe4; /*        6.40:1 AA  — 補助文 */
+  --gold: #f5c445; /*         7.55:1 AAA — 差し色。参考画像の金を明るくして AAA へ
+                                （元の #e9a802 は 5.91:1 で AA 止まりだった） */
+  --gold-deep: #e9a802; /* 画像そのままの金。面（帯）にだけ使い、字には使わない */
+  --navy-ink: #0e1f4a; /* 金の面にのせる字。金 #f5c445 の上で 9.79:1 AAA */
+  --rule: #2f5099; /* 線専用。地との差が小さいので字には使わない */
+  --rule-bright: #4a74c9; /* hover のときの線 */
+
+  /* 書体＝OS 標準のゴシックのみ。日本語 Web フォントを1バイトも読まない。
+     🔴 明朝を使わない＝AI 生成の頻出型（クリーム地＋明朝ディスプレイ）を外すため。 */
+  --font: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo",
+    sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.8;
+  text-wrap: pretty;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-break: strict;
+
+  position: relative;
+  /* 🔴 地の斜めストライプ。**画像ファイルは使わない**（0KB・CSS だけ）。
+     参考画像は斜めの帯が何本も走っている。あれを repeating-linear-gradient で作る。
+     - 角度は -22度（画像の帯とほぼ同じ傾き）
+     - 明暗の差は 1.15:1 程度＝**あるのは分かるが、字の邪魔をしない**幅に抑える
+     - background-attachment: fixed にしない＝スマホで描き直しが重くなる */
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(
+    -22deg,
+    transparent 0 46px,
+    rgba(16, 37, 84, 0.55) 46px 92px
+  );
+}
+
+/* 参考画像の左右の端にある「金と黒の斜めの帯」。
+   🔴 狭い画面では出さない＝本文の幅を削ってまで置く飾りではない。 */
+@media (min-width: 1180px) {
+  .page::before,
+  .page::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    pointer-events: none; /* 飾りの上でクリックを奪わない */
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--gold-deep) 0 10px,
+      #0b1936 10px 20px
+    );
+    opacity: 0.85;
+  }
+  .page::before {
+    left: 0;
+  }
+  .page::after {
+    right: 0;
+  }
+}
+
+/* ═══ 最初の画面 ═══════════════════════════════════════════ */
+.hero {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(48px, 9vw, 96px) 20px clamp(32px, 6vw, 64px);
+}
+
+/* 🔴 この見出しは最初から見えている。**透明から出さない。**
+   理由＝ここが LCP（最大要素の表示）になるページで、opacity:0 から始めると
+   LCP の計測が動き出しを待ち、PSI が落ちる。
+   ＝運用の決まりごと「最初の画面の文字を透明から出さない」 */
+.heroTitle {
+  margin: 0 0 20px;
+  font-size: clamp(32px, 6.6vw, 64px);
+  /* 🎨 参考画像の見出しは「極太・わずかに斜め・字間を詰める」の3点。
+     🔴 日本語の Web フォントは入れない（＝0KB）ので、OS の書体に
+        `oblique 6deg` を当てて傾きだけ借りる。
+        ⚠️ 8度を超えると日本語のハネ・払いが崩れて「壊れた字」に見える。
+           6度は、斜めだと気づくが字形は保たれる境目（実画面で見て決めた）。 */
+  font-weight: 900;
+  font-style: oblique 6deg;
+  line-height: 1.24;
+  letter-spacing: -0.015em;
+}
+.heroTitle em {
+  font-style: inherit; /* em の既定の斜体を打ち消し、見出しの傾きに合わせる */
+  color: var(--gold);
+  /* 参考画像の見出しは、白い字の後ろに濃い影が1段 入っている。
+     金の字が斜めストライプの明るい所に重なったときの可読性もこれで担保する。 */
+  text-shadow: 0 2px 0 rgba(11, 25, 54, 0.55);
+}
+
+.heroLead {
+  margin: 0 0 36px;
+  max-width: 34em;
+  color: var(--muted);
+  font-size: clamp(15px, 1.6vw, 17px);
+}
+
+/* ═══ 触れるビューポート（このページの主役・強くする所は「取っ手ひとつ」）═══ */
+.frameWrap {
+  position: relative;
+}
+
+.frameHint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 枠そのもの。幅は JS が --frame-w（px）で与える。
+   🔴 width ではなく max-width に入れている＝画面より枠が広い端末で
+      横スクロールを生まないため（390px のスマホで実測して決めた）。 */
+.frame {
+  position: relative;
+  max-width: var(--frame-w, 100%);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  /* 🔴 ここが仕掛けの本体＝枠自身を「問い合わせできる箱」にする。
+     中のカードはメディアクエリ（画面幅）ではなく **この枠の幅** で組み替わる。
+     画面幅で組むと、枠を引いても中身が変わらず、仕掛けが成立しない。 */
+  container-type: inline-size;
+  container-name: frame;
+  overflow: hidden;
+  /* 掴んでいる間だけ追従を切る（下の .dragging）。それ以外は滑らかに追う。 */
+  transition: max-width 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.frame.dragging {
+  /* 🔴 掴んでいる間は transition を切る。
+     残すと枠が指より 0.4 秒 遅れて付いてきて、「重い実装」に見える。 */
+  transition: none;
+}
+
+.frameBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.frameDots {
+  display: flex;
+  gap: 6px;
+}
+.frameDots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--rule);
+}
+.frameWidth {
+  margin-left: auto;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums; /* 数字の幅を固定＝ドラッグ中に桁が揺れない */
+}
+
+.frameBody {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  /* 既定（枠が狭い）＝1列。狭いほうを既定にして、広いときだけ足す。 */
+  grid-template-columns: 1fr;
+}
+/* 枠が 34rem を超えたら 2列。🔴 画面幅ではなく **枠幅** で判定している。 */
+@container frame (min-width: 34rem) {
+  .frameBody {
+    grid-template-columns: 1fr 1fr;
+  }
+  .frameBody .cardWide {
+    grid-column: span 2;
+  }
+}
+/* 枠が 52rem を超えたら 3列＋先頭カードを横長に。 */
+@container frame (min-width: 52rem) {
+  .frameBody {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .frameBody .cardWide {
+    grid-column: span 3;
+  }
+  /* 🔴 横長になった先頭カードの本文だけ、行の長さを抑える。
+     3列ぶん（約 970px）を端まで使うと1行 60字を超えて、目が戻る場所を見失う。
+     カード自体は広いまま＝**箱を狭めるのではなく、行を狭める。** */
+  .frameBody .cardWide p {
+    max-width: 44em;
+  }
+}
+
+.card {
+  padding: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--bg);
+  /* 🖱 hover の下ごしらえ。**transform ではなく translate を単独で指定**する。
+     transform にまとめると、GSAP が同じ属性を握っている要素とぶつかる。 */
+  transition: border-color 0.2s ease, translate 0.2s ease, box-shadow 0.2s ease;
+}
+/* 🖱 触れたカードだけ 2px 浮かせ、線を明るくする。
+   🔴 影を濃くしない＝斜めストライプの地に濃い影を落とすと汚れて見える。
+      浮きは「線の明るさ」で見せる。 */
+.card:hover {
+  border-color: var(--rule-bright);
+  translate: 0 -2px;
+  box-shadow: 0 6px 18px rgba(11, 25, 54, 0.35);
+}
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* 取っ手。**このページで唯一、明るく塗ってある部品。**
+   Chanel の「出かける前に1つ外す」＝他を全部 黙らせて、ここだけに目を行かせる。 */
+.handle {
+  position: absolute;
+  top: 0;
+  right: -7px;
+  width: 14px;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none; /* 🔴 これが無いとスマホで縦スクロールに取られ、横に引けない */
+}
+.handle::before {
+  content: "";
+  position: absolute;
+  inset: 0 5px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+.handle::after {
+  /* 掴める場所だと分かる粒。線だけだと「枠の縁」に見えて触ってもらえない。 */
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 5px rgba(245, 196, 69, 0.2);
+  transition: box-shadow 0.18s ease, width 0.18s ease, height 0.18s ease;
+}
+/* 🖱 hover＝掴める物だと、触る前に分かるようにする。
+   粒を大きくして光の輪を広げるだけ＝位置は動かさない
+   （動かすと「掴む場所がずれた」と感じて、かえって触りにくくなる）。 */
+.handle:hover::after {
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 0 0 9px rgba(245, 196, 69, 0.26);
+}
+.handle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+.handle:focus-visible::after {
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 0 0 9px rgba(245, 196, 69, 0.26);
+}
+
+/* ═══ 節 ═══════════════════════════════════════════════════ */
+.section {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(56px, 9vw, 104px) 20px;
+  border-top: 1px solid var(--rule);
+}
+.sectionTitle {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 3.8vw, 38px);
+  font-weight: 900;
+  font-style: oblique 6deg; /* 見出しは最初の画面と同じ傾きでそろえる */
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+}
+/* 参考画像は見出しの左に短い金の帯が入る。節の始まりの目印にする。 */
+.sectionTitle::before {
+  content: "";
+  display: block;
+  width: 52px;
+  height: 5px;
+  margin-bottom: 14px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+.sectionLead {
+  margin: 0 0 32px;
+  max-width: 36em;
+  color: var(--muted);
+}
+
+/* 一文字ずつの立ち上がり。
+   🔴 **最初の画面には当てない**（LCP を遅らせるため）。2画面目以降の節見出しだけ。
+   🔴 opacity ではなく「箱で切って下から押し上げる」で作る＝
+      文字は最初から不透明なので、万一 JS が来なくても**読める状態で止まる**。 */
+.char {
+  display: inline-block;
+  /* 🔴 ここに初期位置（transform / opacity）を**書かない。**
+     CSS で隠すと、JS が落ちた端末で見出しが永久に消える＝壊れ方が最悪になる。
+     隠すのは JS が「これから動かせる」と確かめた後（gsap.set）だけにする。
+     ⇒ 何も起きなければ、ただの読める見出しとして残る。 */
+}
+.charLine {
+  display: inline-block;
+  /* 下から押し上げる文字を、この箱の縁で切る。
+     clip は scroll を作らない hidden（枠の外に出た文字で横スクロールが出ない）。 */
+  overflow: clip;
+  /* 🔴 見出しを oblique 6deg で傾けたので、字の右上・左下が箱からわずかに出る。
+     clip のままだと**傾けた分だけ端が削れる**（「り」のハネが切れて見えた）。
+     左右だけ 0.12em 逃がす。縦は 0 のまま＝押し上げる演出はきちんと隠れる。 */
+  overflow-clip-margin: 0 0.12em;
+  vertical-align: bottom;
+}
+
+/* ═══ 進め方の図（SVG の線画）═══════════════════════════════ */
+.diagram {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+/* 🔴 出し分けの境目は、見た目ではなく**字の実寸の計算**で決めた。
+   SVG は viewBox ごと拡大縮小される＝描画幅 ÷ viewBox幅 が、そのまま字の倍率になる。
+   節の内側の幅＝画面幅 − 左右の余白 40px。
+
+     横組み（viewBox 幅 920・label 13px）
+       画面  900px → 内側 860 → 倍率 0.93 → 12.2px  ✗ 12px すれすれ
+       画面 1024px → 内側 984 → 倍率 1.07 → 13.9px  ✓
+       画面 1120px 以上は内側が 1040 で頭打ち → 14.7px ✓
+     縦組み（viewBox 幅 320・上限 420px）
+       画面  390px → 内側 350 → 倍率 1.09 → 14.2px  ✓
+       画面 1023px → 上限 420 で頭打ち → 倍率 1.31 → 17.1px ✓
+
+   ⇒ 1024px を境に切り替える。**1024px 未満はすべて縦組み。**
+      design-build の下限（スマホ 14px・12px 未満を作らない）を、どちらの側でも満たす。 */
+.diagramWide {
+  display: none;
+}
+.diagramTall {
+  display: block;
+  max-width: 420px; /* 大きくしすぎると箱が間延びする */
+}
+@media (min-width: 1024px) {
+  .diagramWide {
+    display: block;
+  }
+  .diagramTall {
+    display: none;
+  }
+}
+.diagram .line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.diagram .box {
+  fill: var(--bg-raised);
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.diagram .label {
+  fill: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+}
+.diagram .sub {
+  fill: var(--muted);
+  font-family: var(--font);
+  /* 🔴 11px にしていたら、縦組み（倍率 1.09）で実寸ちょうど 12.0px ＝下限すれすれだった。
+     12px にすると 横組み 13.6px／縦組み 13.1px で、どちらも余裕が出る（2026-09-22 実測）。 */
+  font-size: 12px;
+}
+
+/* ═══ 事例の切り替え（View Transitions）═══════════════════════ */
+.switchBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+.switchBtn {
+  padding: 8px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+/* 🖱 選んでいないタブだけ hover を効かせる。
+   🔴 選択中のタブに hover を当てない＝押しても何も起きないのに
+      「押せそう」に見えるのは嘘になる。 */
+.switchBtn:not([aria-selected="true"]):hover {
+  border-color: var(--gold);
+  color: var(--text);
+  background: rgba(245, 196, 69, 0.1);
+}
+.switchBtn[aria-selected="true"] {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--navy-ink); /* 金 #f5c445 の上で 9.79:1 AAA */
+  font-weight: 800;
+  cursor: default;
+}
+.switchPanel {
+  /* 🔴 この名前を View Transitions が掴む。名前が無いと画面ごと白く差し替わり、
+     「非同期で要素が移った」ことが伝わらない。 */
+  view-transition-name: partner-work;
+  padding: 20px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--bg-raised);
+}
+.switchPanel h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+.switchPanel dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+.switchPanel dt {
+  color: var(--muted);
+}
+.switchPanel dd {
+  margin: 0;
+}
+
+/* ═══ できること・できないこと ═══════════════════════════════ */
+.cols {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+/* 図のすぐ下に来る2列だけ、間を空ける（旧・インラインの style を CSS へ移した） */
+.colsSpaced {
+  margin-top: 32px;
+}
+@media (min-width: 720px) {
+  .cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.panel {
+  position: relative;
+  padding: 20px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: rgba(27, 58, 128, 0.42); /* 斜めストライプを少しだけ透かす */
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.panel:hover {
+  border-color: var(--rule-bright);
+  background: rgba(27, 58, 128, 0.62);
+}
+.panel h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 800;
+}
+/* 🔴 Tailwind の preflight が `list-style: none` を当てているので、
+   ul のままでは記号が出ず「ただ字下げされた文章」に見える（2026-09-22 実画面で発見）。
+   既定の黒丸を戻すのではなく、**このページの差し色の短い横線**を置く。
+   ①暗い地では黒丸が沈む ②項目が「並列」であることは線のほうが伝わる。 */
+.panel ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+.panel li {
+  position: relative;
+  margin-bottom: 8px;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.panel li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  /* 1行目の文字の中心に合わせる。font-size 14px × line-height 1.75 の半分。 */
+  top: calc(14px * 1.75 / 2);
+  width: 10px;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.2s ease;
+}
+/* 🖱 行に触れると、金の線だけが伸びる。
+   🔴 行そのものは動かさない＝一覧の中で1行だけ動くと、読んでいる位置を見失う。 */
+.panel li:hover::before {
+  width: 16px;
+}
+.panel li:hover {
+  color: var(--text);
+}
+
+/* ふわっと出るリスト。
+   🔴 初期位置は CSS に書かない。JS が「動かせる」と確かめてから gsap.set で隠す。
+      CSS で隠すと、JS が落ちた端末で**中身が永久に見えない**＝
+      「できること・できないこと」が消えるのは、このページでは致命的。
+   ⇒ 何も起きなければ、ただの読める一覧として残る。 */
+.revealItem {
+  /* 意図的に空。JS が触る対象を指すための目印だけ。 */
+}
+.panel li b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ═══ 締め ═══════════════════════════════════════════════ */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 15px 28px;
+  border-radius: 8px;
+  background: var(--gold);
+  color: var(--navy-ink); /* 9.79:1 AAA */
+  font-weight: 900;
+  font-size: 17px;
+  text-decoration: none;
+  transition: background 0.18s ease, translate 0.18s ease, box-shadow 0.18s ease;
+}
+/* 🖱 いちばん押してほしい所なので、hover は他より1段 大きく出す。
+   ただし色は変えず、明るさと浮きだけ＝色が変わると別のボタンに見える。 */
+.cta:hover {
+  background: #ffd76b;
+  translate: 0 -2px;
+  box-shadow: 0 8px 22px rgba(11, 25, 54, 0.45);
+}
+.cta:active {
+  translate: 0 0;
+  box-shadow: none;
+}
+/* 矢印だけ先に動く＝「進む」という意味を、形でも出す */
+.cta span[aria-hidden] {
+  transition: translate 0.18s ease;
+}
+.cta:hover span[aria-hidden] {
+  translate: 4px 0;
+}
+
+.sourceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.sourceLink a {
+  color: var(--gold);
+  /* 🔴 色だけで意味を伝えない（globals.css の方針）＝下線を必ず付ける */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness 0.15s ease, color 0.15s ease;
+}
+.sourceLink a:hover {
+  color: #ffd76b;
+  text-decoration-thickness: 2px;
+}
+.foot {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 20px 72px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 13px;
+}
