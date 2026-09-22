@@ -6,17 +6,23 @@ import styles from "@/app/partner/partner.module.css";
 
 export type Work = {
   id: string;
+  /** タブの文字。案件の種類が一目で分かる短い言葉 */
   tab: string;
+  /** 受託か自社かを隠さない。ここを曖昧にすると全部の数字が疑わしくなる */
+  kind: string;
   title: string;
   body: string;
-  facts: { k: string; v: string }[];
+  /** 実際に手を動かしたこと */
+  did: string[];
+  /** 🔴 ここがこの部品のいちばん大事な行＝「で、御社は何を任せられるのか」 */
+  soYouCan: string;
 };
 
 /**
- * 事例の切り替え。View Transitions API で、切り替えの「間」をつなぐ。
+ * 作ったものの切り替え。View Transitions で、切り替えの「間」をつなぐ。
  *
  * 🎯 なぜこれを載せたか＝送り先の募集文が
- *    **「慣性スクロールや非同期遷移、各要素への演出」**を名指ししているから。
+ *    「慣性スクロールや非同期遷移、各要素への演出」を名指ししているから。
  *    「非同期遷移ができます」と書く代わりに、押してもらう。
  *
  * 🔴 なぜ CSS のフェードで済ませないのか＝
@@ -45,8 +51,6 @@ export default function WorkSwitch({ works }: { works: Work[] }) {
       startViewTransition?: (cb: () => void) => { finished: Promise<void> };
     };
     const doc = document as WithVT;
-
-    // 動きが苦手な設定の人には、切り替えの演出を掛けない（中身は同じように変わる）
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!doc.startViewTransition || reduced) {
@@ -64,7 +68,7 @@ export default function WorkSwitch({ works }: { works: Work[] }) {
     <div>
       {/* role=tablist ＝キーボードと読み上げに「選ぶ物が並んでいる」と伝える。
           見た目だけボタンに似せると、支援技術には何も伝わらない。 */}
-      <div className={styles.switchBar} role="tablist" aria-label="実装の例">
+      <div className={styles.switchBar} role="tablist" aria-label="作ったもの">
         {works.map((w) => (
           <button
             key={w.id}
@@ -87,16 +91,20 @@ export default function WorkSwitch({ works }: { works: Work[] }) {
         id={`work-${current.id}`}
         aria-labelledby={`tab-${current.id}`}
       >
+        <p className={styles.workKind}>{current.kind}</p>
         <h3>{current.title}</h3>
-        <p>{current.body}</p>
-        <dl>
-          {current.facts.map((f) => (
-            <div key={f.k} style={{ display: "contents" }}>
-              <dt>{f.k}</dt>
-              <dd>{f.v}</dd>
-            </div>
+        <p className={styles.workBody}>{current.body}</p>
+
+        <p className={styles.workDidLabel}>やったこと</p>
+        <ul className={styles.workDid}>
+          {current.did.map((d) => (
+            <li key={d}>{d}</li>
           ))}
-        </dl>
+        </ul>
+
+        {/* 🔴 この一行のために、この節がある。
+            技術の説明で終わらせず、「御社は何を任せられるか」まで言い切る。 */}
+        <p className={styles.workSoYouCan}>{current.soYouCan}</p>
       </div>
     </div>
   );

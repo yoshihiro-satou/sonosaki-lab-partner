@@ -5,22 +5,23 @@
       本体のトップ＝お店の経営者。このページ＝実装者を審査する技術の担当者。
       同じ配色で並べると、どちらの相手にも中途半端になる。
 
-   📌 経緯＝最初は黒地で組んだが「暗すぎる」と判定され、参考にする絵を決めて
-      **画素から色を取り直した**。引き継いだのは4つ＝①濃い青の地
-      ②斜めのストライプ ③金の差し色 ④極太で少し斜めの見出し。
+   📌 経緯＝3段階で今の形になった。
+      ① 黒地＝暗すぎると判定
+      ② 濃紺＋金＋斜めストライプ＝参考にした絵から画素を取って決めた
+      ③ ③ **斜めストライプをやめ、絵具を水に落とした曲線へ。**
+         書体を Dela Gothic One に替え、文字の階段を広げ、一覧の枠をネオン管にした。
 
    🔴 コントラスト比は全部 WCAG 2.1 の相対輝度で実測した値（2026-09-22）。
       目分量で「たぶん読める」を通していない。
    ───────────────────────────────────────────────────────────── */
 .page {
-  /* 🎨 配色。
-     参考にした絵から**実際の画素を取って**決めた色（目分量で拾わない）。
+  /* 🎨 配色＝参考にした絵から**実際の画素を取って**決めた（目分量で拾わない）。
      絵の面積上位＝#204090（20.2%）・#ffffff（12.2%）・#001050（7.5%）、
      差し色の金は #e9a802。この3つの関係をそのまま持ってくる。
      🔴 ただし #204090 をそのまま地にすると補助文が AA を割るので、
         1段 沈めた #16316f を地にした（下の比率はすべて WCAG 2.1 で実測）。 */
   --bg: #16316f; /* 地＝濃い青。参考画像の主色を1段 沈めたもの */
-  --bg-deep: #102554; /* 斜めストライプの暗いほう */
+  --bg-deep: #102554; /* いちばん深い水の色 */
   --bg-raised: #1b3a80; /* カード・枠の中＝地より少し明るい面 */
   --text: #eaf0ff; /* 対 地 10.81:1 AAA */
   --muted: #a8bbe4; /*        6.40:1 AA  — 補助文 */
@@ -31,59 +32,72 @@
   --rule: #2f5099; /* 線専用。地との差が小さいので字には使わない */
   --rule-bright: #4a74c9; /* hover のときの線 */
 
-  /* 書体＝OS 標準のゴシックのみ。日本語 Web フォントを1バイトも読まない。
+  /* ネオン管の縁の光。🔴 **字の色には絶対に使わない**＝光としてだけ。
+     差し色を2本にすると、どちらも効かなくなる（強くする所は1つ）。 */
+  --neon: 143, 243, 255;
+  --neon-gold: 245, 196, 69;
+
+  /* ═══ 書体 ═══
+     2つだけ。役割がはっきり違うので混ざらない。
+     ① 見出し＝Dela Gothic One のサブセット（11.1KB・app/partner/fonts.ts）
+        極太の表示用。h1 と節見出しにしか当てない。
+     ② それ以外＝OS 標準のゴシック（0KB）。長い文を読ませるのはこちら。
      🔴 明朝を使わない＝AI 生成の頻出型（クリーム地＋明朝ディスプレイ）を外すため。 */
   --font: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo",
     sans-serif;
+  --font-display: var(--font-partner-display), var(--font);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ═══ 文字の階段 ═══
+     🔴 **下限 16px**。これ未満は1か所も作らない。
+     🔴 跳ね幅を広く取る＝本文 17px に対して最大の見出しが 136px（8倍）。
+        旧は 16 → 38px の 2.4倍しかなく、どこが見出しか目で分からなかった。
+        段は 16 → 17 → 20 → 23 →（大きく飛ぶ）→ 46 → 76 →（さらに飛ぶ）→ 136。
+        **小さい側は細かく、大きい側は大胆に飛ばす**（本文は読ませ、見出しは見せる）。 */
+  --t-meta: 16px;
+  --t-body: 17px;
+  --t-lead: clamp(18px, 1.9vw, 21px);
+  --t-h3: clamp(20px, 2.1vw, 23px);
+  --t-h2: clamp(40px, 7vw, 76px);
+  --t-h1: clamp(52px, 12vw, 136px);
 
   color: var(--text);
   font-family: var(--font);
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: var(--t-body);
+  line-height: 1.85;
   text-wrap: pretty;
   word-break: normal;
   overflow-wrap: anywhere;
   line-break: strict;
 
   position: relative;
-  /* 🔴 地の斜めストライプ。**画像ファイルは使わない**（0KB・CSS だけ）。
-     参考画像は斜めの帯が何本も走っている。あれを repeating-linear-gradient で作る。
-     - 角度は -22度（画像の帯とほぼ同じ傾き）
-     - 明暗の差は 1.15:1 程度＝**あるのは分かるが、字の邪魔をしない**幅に抑える
-     - background-attachment: fixed にしない＝スマホで描き直しが重くなる */
+  /* 地の色。絵は下の .ink（SVG）が描く。
+     🔴 色を必ず敷く＝SVG が来る前の一瞬、白い画面を見せないため。 */
   background-color: var(--bg);
-  background-image: repeating-linear-gradient(
-    -22deg,
-    transparent 0 46px,
-    rgba(16, 37, 84, 0.55) 46px 92px
-  );
 }
 
-/* 参考画像の左右の端にある「金と黒の斜めの帯」。
-   🔴 狭い画面では出さない＝本文の幅を削ってまで置く飾りではない。 */
-@media (min-width: 1180px) {
-  .page::before,
-  .page::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: 12px;
-    pointer-events: none; /* 飾りの上でクリックを奪わない */
-    background: repeating-linear-gradient(
-      -45deg,
-      var(--gold-deep) 0 10px,
-      #0b1936 10px 20px
-    );
-    opacity: 0.85;
-  }
-  .page::before {
-    left: 0;
-  }
-  .page::after {
-    right: 0;
-  }
+/* 絵具が水に広がった地。components/partner/InkBackdrop.tsx が中身を描く。
+   🔴 fixed＝スクロールしても動かない。水の中を降りていくように見せる。
+   🔴 pointer-events: none＝クリックは全部 下の本文へ抜ける。 */
+.ink {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  /* いちばん深い所の色を敷いておく。SVG の楕円はこの上に広がる。 */
+  background: radial-gradient(
+    120% 90% at 50% 0%,
+    #1b3c86 0%,
+    var(--bg) 42%,
+    #0d1f4c 100%
+  );
+}
+/* 本文は必ず絵の上に来る */
+.page > *:not(.ink) {
+  position: relative;
+  z-index: 1;
 }
 
 /* ═══ 最初の画面 ═══════════════════════════════════════════ */
@@ -93,36 +107,52 @@
   padding: clamp(48px, 9vw, 96px) 20px clamp(32px, 6vw, 64px);
 }
 
-/* 🔴 この見出しは最初から見えている。**透明から出さない。**
-   理由＝ここが LCP（最大要素の表示）になるページで、opacity:0 から始めると
-   LCP の計測が動き出しを待ち、PSI が落ちる。
-   ＝運用の決まりごと「最初の画面の文字を透明から出さない」 */
+/* 🎨 最初の画面の見出し＝**このページで文字がいちばん強く出る場所。**
+   🔴 ここは最初から見えている。**透明から出さない。**
+      この h1 が LCP（最大要素の表示）なので、opacity:0 から始めると
+      計測が動き終わりを待ち、PSI が落ちる
+      ＝運用の決まりごと「最初の画面の文字を透明から出さない」。
+   書体そのものを絵として使う（説明の器にしない）。
+   🔴 色で一語だけ強調する手は使わない。**強弱は大きさで付ける**
+      ＝1行目を小さく、2行目を最大に。色を切り替えるより、
+      読む順番がそのまま強さの順番になる。 */
 .heroTitle {
-  margin: 0 0 20px;
-  font-size: clamp(32px, 6.6vw, 64px);
-  /* 🎨 参考画像の見出しは「極太・わずかに斜め・字間を詰める」の3点。
-     🔴 日本語の Web フォントは入れない（＝0KB）ので、OS の書体に
-        `oblique 6deg` を当てて傾きだけ借りる。
-        ⚠️ 8度を超えると日本語のハネ・払いが崩れて「壊れた字」に見える。
-           6度は、斜めだと気づくが字形は保たれる境目（実画面で見て決めた）。 */
-  font-weight: 900;
-  font-style: oblique 6deg;
-  line-height: 1.24;
-  letter-spacing: -0.015em;
+  margin: 0 0 24px;
+  font-family: var(--font-display);
+  font-size: var(--t-h1);
+  font-weight: 400; /* Dela Gothic One は元から極太。太らせる必要が無い */
+  line-height: 0.96; /* 極太の表示書体は行間を詰めないと、間が空いて見える */
+  /* 🔴 語の途中で折らせない。改行は JSX 側の <br> で自分が決める。 */
+  word-break: keep-all;
+  overflow-wrap: normal;
+  letter-spacing: -0.03em;
+  /* 深い水の中で、字だけが手前に浮いて見えるようにする */
+  text-shadow: 0 6px 30px rgba(8, 18, 48, 0.55);
 }
-.heroTitle em {
-  font-style: inherit; /* em の既定の斜体を打ち消し、見出しの傾きに合わせる */
-  color: var(--gold);
-  /* 参考画像の見出しは、白い字の後ろに濃い影が1段 入っている。
-     金の字が斜めストライプの明るい所に重なったときの可読性もこれで担保する。 */
-  text-shadow: 0 2px 0 rgba(11, 25, 54, 0.55);
+/* 1行目＝導入。小さく、少し引いた明るさで置く */
+.heroTitleLead {
+  display: block;
+  font-size: 0.34em;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+}
+/* 見出しの下の金の線＝節の始まりと同じ記号。ここだけ長い */
+.heroRule {
+  width: 128px;
+  height: 6px;
+  margin: 0 0 28px;
+  border: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), rgba(var(--neon-gold), 0));
 }
 
 .heroLead {
-  margin: 0 0 36px;
-  max-width: 34em;
-  color: var(--muted);
-  font-size: clamp(15px, 1.6vw, 17px);
+  margin: 0 0 40px;
+  max-width: 32em;
+  color: var(--text);
+  font-size: var(--t-lead);
+  line-height: 1.9;
 }
 
 /* ═══ 触れるビューポート（このページの主役・強くする所は「取っ手ひとつ」）═══ */
@@ -136,8 +166,9 @@
   gap: 10px;
   margin: 0 0 12px;
   color: var(--gold);
-  font-size: 14px;
+  font-size: var(--t-meta);
   font-weight: 700;
+  text-shadow: 0 0 14px rgba(var(--neon-gold), 0.5);
 }
 
 /* 枠そのもの。幅は JS が --frame-w（px）で与える。
@@ -172,7 +203,7 @@
   border-bottom: 1px solid var(--rule);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--t-meta); /* 🔴 16px＝下限。ブラウザの枠の飾りでも小さくしない */
 }
 .frameDots {
   display: flex;
@@ -240,14 +271,14 @@
   box-shadow: 0 6px 18px rgba(11, 25, 54, 0.35);
 }
 .card h3 {
-  margin: 0 0 6px;
-  font-size: 15px;
-  font-weight: 700;
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
 }
 .card p {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--t-meta); /* 🔴 16px＝下限 */
   line-height: 1.75;
 }
 
@@ -312,27 +343,29 @@
   border-top: 1px solid var(--rule);
 }
 .sectionTitle {
-  margin: 0 0 8px;
-  font-size: clamp(24px, 3.8vw, 38px);
-  font-weight: 900;
-  font-style: oblique 6deg; /* 見出しは最初の画面と同じ傾きでそろえる */
-  line-height: 1.32;
-  letter-spacing: -0.012em;
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: var(--t-h2);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.028em;
+  text-shadow: 0 4px 22px rgba(8, 18, 48, 0.45);
 }
-/* 参考画像は見出しの左に短い金の帯が入る。節の始まりの目印にする。 */
+/* 節の始まりの目印。最初の画面の金の線と同じ形で、短い。 */
 .sectionTitle::before {
   content: "";
   display: block;
-  width: 52px;
-  height: 5px;
-  margin-bottom: 14px;
-  border-radius: 2px;
-  background: var(--gold);
+  width: 64px;
+  height: 6px;
+  margin-bottom: 20px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), rgba(var(--neon-gold), 0));
 }
 .sectionLead {
-  margin: 0 0 32px;
-  max-width: 36em;
+  margin: 0 0 40px;
+  max-width: 34em;
   color: var(--muted);
+  font-size: var(--t-lead);
 }
 
 /* 一文字ずつの立ち上がり。
@@ -369,15 +402,17 @@
    節の内側の幅＝画面幅 − 左右の余白 40px。
 
      横組み（viewBox 幅 920・label 13px）
-       画面  900px → 内側 860 → 倍率 0.93 → 12.2px  ✗ 12px すれすれ
-       画面 1024px → 内側 984 → 倍率 1.07 → 13.9px  ✓
-       画面 1120px 以上は内側が 1040 で頭打ち → 14.7px ✓
-     縦組み（viewBox 幅 320・上限 420px）
-       画面  390px → 内側 350 → 倍率 1.09 → 14.2px  ✓
-       画面 1023px → 上限 420 で頭打ち → 倍率 1.31 → 17.1px ✓
+     🆕 2026-09-22 夜＝**下限を 16px に上げた**ので、倍率を 1.0 に固定して
+      「指定＝実寸」にした（式で確かめられない状態をやめる）。
 
-   ⇒ 1024px を境に切り替える。**1024px 未満はすべて縦組み。**
-      design-build の下限（スマホ 14px・12px 未満を作らない）を、どちらの側でも満たす。 */
+     横組み（viewBox 幅 1000）は **1080px 以上でしか出さない**
+       → 節の内側は max-width 1080 − 余白 40 ＝ **常に 1040px** で頭打ち
+       → 倍率 1.04 固定。label 17 → 17.7px ✓／sub 16 → 16.6px ✓
+     縦組み（viewBox 幅 320・上限 420px）
+       画面  390px → 内側 350 → 倍率 1.09 → label 15→16.4px ✓／sub 14→15.3px
+       画面 1079px → 上限 420 → 倍率 1.31 → label 19.7px ✓／sub 18.4px ✓
+
+   ⇒ **1080px 未満はすべて縦組み。** 実寸は下で測って確かめる。 */
 .diagramWide {
   display: none;
 }
@@ -385,7 +420,7 @@
   display: block;
   max-width: 420px; /* 大きくしすぎると箱が間延びする */
 }
-@media (min-width: 1024px) {
+@media (min-width: 1080px) {
   .diagramWide {
     display: block;
   }
@@ -407,15 +442,24 @@
 .diagram .label {
   fill: var(--text);
   font-family: var(--font);
-  font-size: 13px;
-  font-weight: 700;
+  /* 🔴 viewBox の幅＝描かれる幅にそろえてあるので、この数字がほぼ実寸 px。
+     下限 16px を式で確かめられる状態にしてある（縦組みは下で上書き）。 */
+  font-size: 17px;
+  font-weight: 800;
 }
 .diagram .sub {
   fill: var(--muted);
   font-family: var(--font);
-  /* 🔴 11px にしていたら、縦組み（倍率 1.09）で実寸ちょうど 12.0px ＝下限すれすれだった。
-     12px にすると 横組み 13.6px／縦組み 13.1px で、どちらも余裕が出る（2026-09-22 実測）。 */
-  font-size: 12px;
+  font-size: 16px; /* 🔴 下限 */
+}
+/* 縦組みは viewBox 幅 320・描かれる幅 350〜420＝倍率 1.09〜1.31。
+   横組みと同じ数字にすると 22px まで膨らむので、こちらだけ小さく指定して
+   **実寸で 16〜21px に収める**（指定値ではなく実寸を下限に合わせる）。 */
+.diagramTall .label {
+  font-size: 15px;
+}
+.diagramTall .sub {
+  font-size: 14px;
 }
 
 /* ═══ 事例の切り替え（View Transitions）═══════════════════════ */
@@ -432,7 +476,7 @@
   background: transparent;
   color: var(--muted);
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--t-meta);
   cursor: pointer;
   transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
@@ -461,15 +505,16 @@
   background: var(--bg-raised);
 }
 .switchPanel h3 {
-  margin: 0 0 10px;
-  font-size: 18px;
+  margin: 0 0 12px;
+  font-size: var(--t-h3);
+  font-weight: 800;
 }
 .switchPanel dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 6px 16px;
-  margin: 16px 0 0;
-  font-size: 14px;
+  gap: 8px 20px;
+  margin: 20px 0 0;
+  font-size: var(--t-meta);
 }
 .switchPanel dt {
   color: var(--muted);
@@ -493,22 +538,52 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+/* ═══ ネオン管の枠（一覧の枠をネオン管に見せる）═══
+   🔴 ネオンは**3層でできている。** どれが欠けても看板に見えない。
+     ① 管そのもの＝細い明るい縁（border）
+     ② 管の内側に溜まる光＝inset の box-shadow
+     ③ 管のまわりへ漏れる光＝外向きの box-shadow を2段（近い強い光＋遠い淡い光）
+   🔴 光の色は**金を主、シアン白を縁の照り返し**にしている。
+      シアンを面で使うと差し色が2本になって、取っ手とボタンが効かなくなる。
+   🔴 字の色はどれも変えていない＝ネオンは光であって、可読性を削る装飾にしない。 */
 .panel {
   position: relative;
-  padding: 20px;
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  background: rgba(27, 58, 128, 0.42); /* 斜めストライプを少しだけ透かす */
-  transition: border-color 0.2s ease, background 0.2s ease;
+  padding: 26px 24px;
+  border: 1px solid rgba(var(--neon-gold), 0.75);
+  border-radius: 14px;
+  /* 🔴 管の中は地より**暗く**する。明るい面にネオンを乗せても光って見えない
+     ＝光は「まわりが暗いこと」で成り立つ。 */
+  background: linear-gradient(
+    160deg,
+    rgba(14, 33, 82, 0.86),
+    rgba(8, 20, 56, 0.92)
+  );
+  box-shadow:
+    inset 0 0 34px rgba(var(--neon-gold), 0.12),
+    inset 0 1px 0 rgba(var(--neon), 0.4),
+    0 0 0 1px rgba(var(--neon-gold), 0.18),
+    0 0 30px rgba(var(--neon-gold), 0.24),
+    0 0 84px rgba(var(--neon-gold), 0.13);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
+/* 🖱 触れると管が明るくなる。位置は動かさない＝一覧を読んでいる最中に
+   箱が動くと、目で追っている行を見失う。上がるのは**光の量だけ**。 */
 .panel:hover {
-  border-color: var(--rule-bright);
-  background: rgba(27, 58, 128, 0.62);
+  border-color: rgba(var(--neon), 0.95);
+  box-shadow:
+    inset 0 0 44px rgba(var(--neon-gold), 0.2),
+    inset 0 1px 0 rgba(var(--neon), 0.7),
+    0 0 0 1px rgba(var(--neon-gold), 0.34),
+    0 0 44px rgba(var(--neon-gold), 0.42),
+    0 0 130px rgba(var(--neon-gold), 0.22);
 }
 .panel h3 {
-  margin: 0 0 12px;
-  font-size: 17px;
+  margin: 0 0 16px;
+  font-size: var(--t-h3);
   font-weight: 800;
+  letter-spacing: -0.01em;
+  /* 見出しの字がうっすら発光して見える＝管の中の字 */
+  text-shadow: 0 0 18px rgba(var(--neon-gold), 0.35);
 }
 /* 🔴 Tailwind の preflight が `list-style: none` を当てているので、
    ul のままでは記号が出ず「ただ字下げされた文章」に見える（2026-09-22 実画面で発見）。
@@ -521,26 +596,33 @@
 }
 .panel li {
   position: relative;
-  margin-bottom: 8px;
-  padding-left: 20px;
+  margin-bottom: 12px;
+  padding-left: 26px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--t-meta); /* 🔴 16px＝下限。これ未満にしない */
+  line-height: 1.8;
+  transition: color 0.2s ease;
 }
+/* 行の印＝短い金の線。点でも黒丸でもないのは、
+   ①暗い地では丸が沈む ②並列であることは線のほうが伝わる、の2つ。 */
 .panel li::before {
   content: "";
   position: absolute;
   left: 0;
-  /* 1行目の文字の中心に合わせる。font-size 14px × line-height 1.75 の半分。 */
-  top: calc(14px * 1.75 / 2);
-  width: 10px;
-  height: 1px;
+  /* 1行目の文字の中心に合わせる。font-size 16px × line-height 1.8 の半分。 */
+  top: calc(16px * 1.8 / 2);
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
   background: var(--gold);
-  transition: width 0.2s ease;
+  box-shadow: 0 0 8px rgba(var(--neon-gold), 0.7); /* 線も光らせる＝管の一部 */
+  transition: width 0.22s ease, box-shadow 0.22s ease;
 }
-/* 🖱 行に触れると、金の線だけが伸びる。
+/* 🖱 行に触れると、金の線が伸びて強く光る。
    🔴 行そのものは動かさない＝一覧の中で1行だけ動くと、読んでいる位置を見失う。 */
 .panel li:hover::before {
-  width: 16px;
+  width: 22px;
+  box-shadow: 0 0 16px rgba(var(--neon-gold), 1);
 }
 .panel li:hover {
   color: var(--text);
@@ -600,7 +682,7 @@
   margin-top: 24px;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--t-meta);
 }
 .sourceLink a {
   color: var(--gold);
@@ -620,5 +702,228 @@
   padding: 40px 20px 72px;
   border-top: 1px solid var(--rule);
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--t-meta);
+}
+
+/* ═══ ネオン管が点く ═══
+   🔴 **演出は1か所にまとめる**（各要素にフェードを散らさない）。
+      枠が視界に入る → 管が2回 瞬いてから灯る → そのあと行が立ち上がる、の一続き。
+      本物のネオンは、点く瞬間に必ず一度 ためらう。そこを写している。
+
+   🔴 消えている状態（.panelOff）を CSS の初期値にしない。
+      JS が「これから動かせる」と確かめてから付ける＝
+      JS が落ちた端末では、最初から灯った状態の枠が出る。 */
+.panelOff {
+  border-color: rgba(var(--neon-gold), 0.14);
+  box-shadow:
+    inset 0 0 10px rgba(var(--neon-gold), 0.02),
+    0 0 0 1px rgba(var(--neon-gold), 0.04);
+}
+.panelOn {
+  /* 🔴 `steps()` を使わない。
+     段階関数は「最後の区間の開始値」を保持するので、**終わったときに
+     100% の値にならない**（実測＝灯り切ったはずの枠が border 0.18 のままだった）。
+     瞬きの角は、キーフレームを 0.5% 隣に置いて作る＝値が変わる瞬間だけ急になる。 */
+  animation: neonOn 0.8s ease-out forwards;
+}
+@keyframes neonOn {
+  0%,
+  9% {
+    border-color: rgba(var(--neon-gold), 0.12);
+    box-shadow: inset 0 0 10px rgba(var(--neon-gold), 0.02);
+  }
+  /* 一瞬 灯って…… */
+  9.5%,
+  17% {
+    border-color: rgba(var(--neon-gold), 1);
+    box-shadow:
+      inset 0 0 40px rgba(var(--neon-gold), 0.22),
+      0 0 40px rgba(var(--neon-gold), 0.42),
+      0 0 90px rgba(var(--neon-gold), 0.2);
+  }
+  /* …落ちて…… */
+  17.5%,
+  27% {
+    border-color: rgba(var(--neon-gold), 0.14);
+    box-shadow: inset 0 0 10px rgba(var(--neon-gold), 0.03);
+  }
+  /* …もう一度、今度は強く瞬いて…… */
+  27.5%,
+  38% {
+    border-color: rgba(var(--neon), 1);
+    box-shadow:
+      inset 0 0 48px rgba(var(--neon-gold), 0.28),
+      0 0 54px rgba(var(--neon-gold), 0.55),
+      0 0 120px rgba(var(--neon-gold), 0.28);
+  }
+  /* …一度 沈んでから…… */
+  38.5%,
+  46% {
+    border-color: rgba(var(--neon-gold), 0.26);
+    box-shadow: inset 0 0 14px rgba(var(--neon-gold), 0.05);
+  }
+  /* …安定して灯る（= .panel の既定の光と同じ値で終わる） */
+  100% {
+    border-color: rgba(var(--neon-gold), 0.75);
+    box-shadow:
+      inset 0 0 34px rgba(var(--neon-gold), 0.12),
+      inset 0 1px 0 rgba(var(--neon), 0.4),
+      0 0 0 1px rgba(var(--neon-gold), 0.18),
+      0 0 30px rgba(var(--neon-gold), 0.24),
+      0 0 84px rgba(var(--neon-gold), 0.13);
+  }
+}
+/* 🔴 明滅は、光に過敏な人には負担になる。動きを切る設定のときは
+   瞬かせず、最初から灯った状態で出す。 */
+@media (prefers-reduced-motion: reduce) {
+  .panelOff,
+  .panelOn {
+    animation: none;
+    border-color: rgba(var(--neon-gold), 0.75);
+    box-shadow:
+      inset 0 0 34px rgba(var(--neon-gold), 0.12),
+      0 0 30px rgba(var(--neon-gold), 0.24);
+  }
+}
+
+/* ═══ こんなときに呼んでください ═══════════════════════════
+   🔴 番号（01 / 02 / 03）を振らない。**順番のあるものではない**ので、
+      振ると「手順」に読めてしまう。並列は線で示す。 */
+.caseList {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid rgba(var(--neon-gold), 0.26);
+}
+.caseItem {
+  display: grid;
+  gap: 4px 32px;
+  padding: 22px 4px;
+  border-bottom: 1px solid rgba(var(--neon-gold), 0.26);
+  align-items: baseline;
+}
+@media (min-width: 760px) {
+  .caseItem {
+    /* 左＝場面、右＝こちらの答え。目が左右に1往復するだけで意味が取れる */
+    grid-template-columns: minmax(0, 20em) minmax(0, 1fr);
+  }
+}
+.caseWhen {
+  margin: 0;
+  font-size: var(--t-h3);
+  font-weight: 800;
+  line-height: 1.5;
+  color: var(--text);
+}
+/* 場面の頭に「・」も番号も付けず、金の縦線だけ立てる */
+.caseWhen::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.9em;
+  margin-right: 12px;
+  vertical-align: -0.08em;
+  border-radius: 2px;
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(var(--neon-gold), 0.7);
+}
+.caseThen {
+  margin: 0;
+  font-size: var(--t-body);
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* ═══ デモの下の一言 ═══
+   🔴 デモの前に説明を積まない。**触ってから、一言だけ。** */
+.demoNote {
+  margin: 28px 0 0;
+  max-width: 34em;
+  color: var(--muted);
+  font-size: var(--t-body);
+}
+.demoNote b {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+/* 枠の中の見本＝架空の店舗サイト。小さな添え字で「架空」と断る */
+.mockEyebrow {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: var(--t-meta);
+}
+
+/* ═══ 作ったもの ═══════════════════════════════════════ */
+.workKind {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: var(--t-meta);
+  font-weight: 700;
+}
+.workBody {
+  margin: 0 0 24px;
+  max-width: 44em;
+  color: var(--muted);
+  font-size: var(--t-body);
+}
+.workDidLabel {
+  margin: 0 0 10px;
+  font-size: var(--t-meta);
+  font-weight: 800;
+  color: var(--text);
+}
+.workDid {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+.workDid li {
+  position: relative;
+  margin-bottom: 8px;
+  padding-left: 26px;
+  color: var(--muted);
+  font-size: var(--t-meta);
+  line-height: 1.8;
+}
+.workDid li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(16px * 1.8 / 2);
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(var(--neon-gold), 0.7);
+}
+/* 🔴 この節でいちばん読ませたい一行。ここだけ字を大きくして囲む。 */
+.workSoYouCan {
+  margin: 0;
+  padding: 18px 20px;
+  border-left: 4px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  background: rgba(var(--neon-gold), 0.08);
+  color: var(--text);
+  font-size: var(--t-h3);
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+/* ═══ 佐藤について ═══════════════════════════════════════
+   🔴 ここだけ箇条書きにしない。**人が話している段落**にする。
+      並べた瞬間に「仕様」に見えて、人が消える。 */
+.about {
+  max-width: 34em; /* 1行 34字前後＝日本語が読みやすい上限 */
+}
+.about p {
+  margin: 0 0 22px;
+  font-size: var(--t-lead);
+  line-height: 2;
+}
+.about p:last-child {
+  margin-bottom: 0;
+}
+
+.ctaWrap {
+  margin: 40px 0 0;
 }

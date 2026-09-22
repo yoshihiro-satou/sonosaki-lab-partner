@@ -117,12 +117,15 @@ export default function ProcessDiagram() {
 
 /** 横一列（広い画面用）。座標は式から出す＝段を増減しても手で数字を直さない */
 function WideDiagram() {
-  const W = 920;
-  /* 🔴 92 は「箱の下端 76 ＋ 余白 16」。
-     150 にしていたら、実画面で図の下に 74px の空白が出た（2026-09-22 実測）。
-     SVG は viewBox の比率のまま拡大されるので、**使っていない高さも一緒に伸びる。** */
-  const H = 92;
-  const boxW = 176;
+  /* 🔴 viewBox の幅を「実際に描かれる幅」に合わせてある（節の内側＝最大 1040px）。
+     こうすると倍率がほぼ 1.0 に固定され、**viewBox の中の数字がそのまま px になる。**
+     920 にしていたときは倍率 1.13 で、13px が 14.7px に化けていた＝
+     指定と実寸が一致せず、下限 16px を守れているか式で確かめられなかった。
+     出し分けを 1080px 以上に限ったので、この図が出るときの内側は常に 1040px。 */
+  const W = 1000;
+  /* 「箱の下端 88 ＋ 余白 16」。使っていない高さも一緒に伸びるので余らせない。 */
+  const H = 104;
+  const boxW = 214;
   const gap = (W - boxW * STEPS.length) / (STEPS.length - 1);
   const x = (i: number) => i * (boxW + gap);
 
@@ -139,16 +142,16 @@ function WideDiagram() {
         <path
           key={i}
           className={styles.line}
-          d={`M ${x(i) + boxW + 8} 46 L ${x(i + 1) - 8} 46`}
+          d={`M ${x(i) + boxW + 10} 52 L ${x(i + 1) - 10} 52`}
         />
       ))}
       {STEPS.map((s, i) => (
         <g key={s.label} data-step={i}>
-          <rect className={styles.box} x={x(i)} y={16} width={boxW} height={60} rx={8} />
-          <text className={styles.label} x={x(i) + 16} y={42}>
+          <rect className={styles.box} x={x(i)} y={16} width={boxW} height={72} rx={10} />
+          <text className={styles.label} x={x(i) + 18} y={46}>
             {s.label}
           </text>
-          <text className={styles.sub} x={x(i) + 16} y={62}>
+          <text className={styles.sub} x={x(i) + 18} y={70}>
             {s.sub}
           </text>
         </g>
@@ -160,7 +163,7 @@ function WideDiagram() {
 /** 縦積み（狭い画面用）。viewBox を 320 幅にして、字が潰れない倍率に保つ */
 function TallDiagram() {
   const W = 320;
-  const boxH = 58;
+  const boxH = 66;
   const gap = 22;
   const H = STEPS.length * boxH + (STEPS.length - 1) * gap;
   const y = (i: number) => i * (boxH + gap);
@@ -177,16 +180,16 @@ function TallDiagram() {
         <path
           key={i}
           className={styles.line}
-          d={`M 22 ${y(i) + boxH + 5} L 22 ${y(i + 1) - 5}`}
+          d={`M 24 ${y(i) + boxH + 5} L 24 ${y(i + 1) - 5}`}
         />
       ))}
       {STEPS.map((s, i) => (
         <g key={s.label} data-step={i}>
-          <rect className={styles.box} x={0} y={y(i)} width={W} height={boxH} rx={8} />
-          <text className={styles.label} x={16} y={y(i) + 25}>
+          <rect className={styles.box} x={0} y={y(i)} width={W} height={boxH} rx={10} />
+          <text className={styles.label} x={18} y={y(i) + 28}>
             {s.label}
           </text>
-          <text className={styles.sub} x={16} y={y(i) + 44}>
+          <text className={styles.sub} x={18} y={y(i) + 50}>
             {s.sub}
           </text>
         </g>
