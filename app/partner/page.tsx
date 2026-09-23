@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   description:
     "Web制作会社・デザイン会社さま向けのフロントエンド実装パートナーです。Figmaからのコーディング、既存サイトの改修、アニメーション、レスポンシブ対応まで。1ページ分の実装 税込 ¥30,000〜。",
   alternates: { canonical: "https://sonosaki-lab.com/partner" },
+  /* 応募文で手渡すだけのページ＝検索には出さない（2026-09-23 社長決裁）。
+     リンクはたどってよいので follow は残す */
+  robots: { index: false, follow: true },
 };
 
 /** よくある依頼の形。ここは「できること」ではなく「持ち込まれる場面」で書く */
@@ -397,7 +400,7 @@ export default function PartnerPage() {
           <p className={styles.revealItem}>
             制作会社さんからいただいたデザインを、ブラウザで動くところまで持っていく。
             それが仕事の中身です。再委託はしません。最初から最後まで私が、
-            きちんとコードまでチェックしながら行います（私の勉強も含みます）。
+            きちんとコードまでチェックしながら行います。
           </p>
           <p className={styles.revealItem}>
             屋号を立てたのは 2026 年 7 月なので、受託の数はまだ並べられません。
