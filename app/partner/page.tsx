@@ -21,7 +21,7 @@ export const metadata: Metadata = {
      （書くと「…｜Sonosaki Lab.｜Sonosaki Lab.」と二重になる） */
   title: "実装パートナーとして",
   description:
-    "Web制作会社・デザイン会社さま向けのフロントエンド実装パートナーです。Figmaからのコーディング、既存サイトの改修、アニメーション、レスポンシブ対応まで。1ページ分の実装 税込 ¥30,000〜。",
+    "Web制作会社・デザイン会社さま向けのフロントエンド実装パートナーです。既存サイトの改修、アニメーション、レスポンシブ対応まで。1ページ分の実装 税込 ¥30,000〜。",
   alternates: { canonical: "https://sonosaki-lab.com/partner" },
   /* 応募文で手渡すだけのページ＝検索には出さない（2026-09-23 社長決裁）。
      リンクはたどってよいので follow は残す */
@@ -30,7 +30,6 @@ export const metadata: Metadata = {
 
 /** よくある依頼の形。ここは「できること」ではなく「持ち込まれる場面」で書く */
 const CASES = [
-  { when: "Figma はもう出来ている", then: "コーディングだけお引き受けします。" },
   {
     when: "既存サイトに動きを足したい",
     then: "GSAP・CSS アニメーション・View Transitions で実装します。",
@@ -147,7 +146,7 @@ export default function PartnerPage() {
         <hr className={styles.heroRule} />
         <p className={styles.heroLead}>
           Web 制作会社・デザイン会社さま向けの、フロントエンド実装パートナーです。
-          Figma からのコーディング、既存サイトの改修、アニメーション、レスポンシブ対応まで、
+          既存サイトの改修、アニメーション、レスポンシブ対応まで、
           実装の工程をお引き受けします。
         </p>
       </section>
@@ -280,9 +279,12 @@ export default function PartnerPage() {
             <h3 className={styles.revealItem}>こちらが担当すること</h3>
             <ul>
               <li className={styles.revealItem}>
-                コーディング（Figma・XD・PSD・画像いずれでも）
+                デザインデータ（Figma など）からの実装もお受けします（他社のデザインからの受託は、まだありません）
               </li>
               <li className={styles.revealItem}>既存リポジトリへの機能追加と改修</li>
+              <li className={styles.revealItem}>
+                WordPress の既存サイトの修正（内容を確認して、お受けできるかをお伝えします。受託の実績はまだありません）
+              </li>
               <li className={styles.revealItem}>アニメーションの実装</li>
               <li className={styles.revealItem}>レスポンシブ対応と実機での確認</li>
               <li className={styles.revealItem}>表示速度の改善</li>
@@ -302,8 +304,8 @@ export default function PartnerPage() {
           text="御社の開発フローに戻しやすい形で渡します"
         />
         <p className={styles.sectionLead}>
-          ブランチを切って作業し、Pull Request でお渡しします。
-          既存のブランチルールや CI があれば、そちらに合わせます。
+          自社のサイトは、ブランチと Pull Request で作っています。
+          御社のリポジトリでの渡し方は、決まりを伺ってから合わせます。
         </p>
 
         <SourceNote
@@ -347,6 +349,41 @@ export default function PartnerPage() {
         </RevealPanel>
       </section>
 
+      {/* ═══ AI の扱いと連絡 ═══ */}
+      <section className={styles.section}>
+        <RevealHeading
+          className={styles.sectionTitle}
+          text="AI の扱いと、連絡のしかた"
+        />
+
+        <RevealPanel className={styles.cols}>
+          <div className={styles.panel}>
+            <h3 className={styles.revealItem}>AI の扱い</h3>
+            <ul>
+              <li className={styles.revealItem}>開発には Claude Code を使っています</li>
+              <li className={styles.revealItem}>
+                御社やエンドクライアント様の顧客データ、認証情報、個人情報は AI に渡しません
+              </li>
+              <li className={styles.revealItem}>
+                AI の利用を認めていない案件では、使わずに書きます
+              </li>
+            </ul>
+          </div>
+          <div className={styles.panel}>
+            <h3 className={styles.revealItem}>連絡</h3>
+            <ul>
+              <li className={styles.revealItem}>
+                Slack や Chatwork など、御社の連絡手段に合わせます
+              </li>
+              <li className={styles.revealItem}>成果物は GitHub などのリポジトリで共有します</li>
+              <li className={styles.revealItem}>
+                不明点は抱えたまま進めず、着手前に確認します
+              </li>
+            </ul>
+          </div>
+        </RevealPanel>
+      </section>
+
       {/* ═══ 料金 ═══ */}
       <section className={styles.section}>
         <RevealHeading className={styles.sectionTitle} text="料金" />
@@ -359,7 +396,7 @@ export default function PartnerPage() {
                 <b>1ページ分の実装 税込 ¥30,000〜</b>
               </li>
               <li className={styles.revealItem}>
-                部品ひとつ、一画面だけ、といった小さい単位は、範囲を伺って別途お見積り
+                部品ひとつ、一画面だけの修正も承ります。1回のご依頼は税込 ¥30,000 からです
               </li>
               <li className={styles.revealItem}>
                 打ち合わせやディレクションが入る場合も、範囲を整理して別途お見積り
@@ -379,7 +416,7 @@ export default function PartnerPage() {
                 始める前に、やることと金額を書いてお渡しします
               </li>
               <li className={styles.revealItem}>
-                渡した金額から、後で勝手に増やすことはしません
+                途中で変更が入ったときは、金額が変わるかどうかを作業の前にお知らせします
               </li>
               <li className={styles.revealItem}>
                 NDA・業務委託契約は御社の書式で構いません
