@@ -379,6 +379,11 @@
      隠すのは JS が「これから動かせる」と確かめた後（gsap.set）だけにする。
      ⇒ 何も起きなければ、ただの読める見出しとして残る。 */
 }
+.phrase {
+  /* RevealHeading の `|` で区切ったかたまり。中では折り返さない＝改行はかたまりの間だけ */
+  display: inline-block;
+  white-space: nowrap;
+}
 .charLine {
   display: inline-block;
   /* 下から押し上げる文字を、この箱の縁で切る。

@@ -155,7 +155,7 @@ export default function PartnerPage() {
       <section className={styles.section}>
         <RevealHeading
           className={styles.sectionTitle}
-          text="こんなときに呼んでください"
+          text="こんなときに|呼んでください"
         />
         <p className={styles.sectionLead}>
           いただいたデザインを、ブラウザで動くところまで持っていく仕事です。
@@ -173,7 +173,7 @@ export default function PartnerPage() {
 
       {/* ═══ 触れるデモ ═══ */}
       <section className={styles.section}>
-        <RevealHeading className={styles.sectionTitle} text="触ってみてください" />
+        <RevealHeading className={styles.sectionTitle} text="触って|みてください" />
 
         <SourceNote
           title="幅を引ける枠：なぜ ResizeObserver ではなく pointer イベントか"
@@ -353,7 +353,7 @@ export default function PartnerPage() {
       <section className={styles.section}>
         <RevealHeading
           className={styles.sectionTitle}
-          text="AI の扱いと、連絡のしかた"
+          text="AI の扱いと、|連絡のしかた"
         />
 
         <RevealPanel className={styles.cols}>

@@ -29,6 +29,12 @@ import styles from "@/app/partner/partner.module.css";
  * 🔴 なぜ単語ではなく1文字ずつか＝日本語には分かち書きが無く、
  *    単語単位で切ると「切れ目が無い1かたまり」になって動きが出ない。
  *    ただし **英数字の連なりは1かたまりに保つ**（`Next.js` が N/e/x/t…と散ると読みにくい）。
+ *
+ * 🔴 `text` の `|` は「ここでだけ折り返してよい」の印（画面には出ない）。
+ *    1文字ずつ inline-block に割ると、ブラウザはどの文字の間でも折り返す。
+ *    スマホ幅（375px）で「くだ／さい」「連絡／のしかた」と語の途中で割れていた（2026-09-24）。
+ *    ⇒ `|` で区切ったかたまりを nowrap の箱に入れ、改行はかたまりの間だけにする。
+ *      `|` が無い見出しは従来どおり（どこでも折り返せる）。
  */
 export default function RevealHeading({
   text,
@@ -98,26 +104,37 @@ export default function RevealHeading({
 
   /* 英数字・記号の連なりは割らずに1かたまりにする。
      例＝「Next.js の実装」→ ["Next.js", " ", "の", "実", "装"] */
-  const pieces = text.match(/[A-Za-z0-9./+#-]+|\s|[\s\S]/g) ?? [];
+  const split = (t: string) => t.match(/[A-Za-z0-9./+#-]+|\s|[\s\S]/g) ?? [];
+  const phrases = text.split("|");
+  const label = phrases.join("");
+
+  const renderChars = (t: string, prefix: string) =>
+    split(t).map((p, i) =>
+      p === " " ? (
+        // 空白は動かさない（動かすと語間がガタつく）
+        <span key={`${prefix}${i}`}> </span>
+      ) : (
+        <span key={`${prefix}${i}`} className={styles.char}>
+          {p}
+        </span>
+      ),
+    );
 
   return (
     /* 🔴 aria-label で見出しの文を1本に戻している。
        これが無いと、読み上げソフトは span に割れた文字を1つずつ読み、
        「せ・い・さ・く」と区切って発音する（動きのために中身を割った副作用）。
        中の span は aria-hidden にして、読まれるのは label の1本だけにする。 */
-    <Tag className={className} ref={ref} aria-label={text}>
+    <Tag className={className} ref={ref} aria-label={label}>
       {/* 見出し全体を1つの箱で切る。箱が無いと、押し上げる前の文字が上の行にはみ出す */}
       <span className={styles.charLine} aria-hidden="true">
-        {pieces.map((p, i) =>
-          p === " " ? (
-            // 空白は動かさない（動かすと語間がガタつく）
-            <span key={i}> </span>
-          ) : (
-            <span key={i} className={styles.char}>
-              {p}
-            </span>
-          ),
-        )}
+        {phrases.length > 1
+          ? phrases.map((ph, j) => (
+              <span key={j} className={styles.phrase}>
+                {renderChars(ph, `${j}-`)}
+              </span>
+            ))
+          : renderChars(text, "")}
       </span>
     </Tag>
   );
