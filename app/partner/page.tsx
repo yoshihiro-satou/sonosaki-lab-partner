@@ -48,6 +48,23 @@ const CASES = [
   },
 ] as const;
 
+/* 広告運用の会社さま向け。🔴 「広告用 LP の実績」は名乗らない
+   （広告の飛び先として納めた LP はまだ無い）。書くのは、受託の1件で実際にやったことだけ。 */
+const AD_CASES = [
+  {
+    when: "原稿とデザインはあるのに、LP を組む手が空いていない",
+    then: "支給のデザインと原稿で、1ページ分を実装します。税込 ¥30,000 から。",
+  },
+  {
+    when: "広告から来た人が、LP を開き切る前に離れている気がする",
+    then: "表示速度を測って、重さの原因のところから直します。",
+  },
+  {
+    when: "コンバージョンの計測が合っているか自信がない",
+    then: "GA4・GTM・Meta ピクセルのタグが、押したときに本当に記録されるかを確かめて直します。",
+  },
+] as const;
+
 /* 🔴 受託か自社かを、それぞれの中で必ず名乗る。
    数が少ないのを隠すために曖昧にすると、載っている数字まで疑われる。 */
 const WORKS: Work[] = [
@@ -169,6 +186,30 @@ export default function PartnerPage() {
             </div>
           ))}
         </RevealPanel>
+      </section>
+
+      {/* ═══ 広告運用の会社さまへ ═══ */}
+      <section className={styles.section}>
+        <RevealHeading
+          className={styles.sectionTitle}
+          text="広告運用の|会社さまへ"
+        />
+        <p className={styles.sectionLead}>
+          LP のデザインと原稿が決まっていれば、実装からお引き受けします。
+        </p>
+
+        <RevealPanel className={styles.caseList}>
+          {AD_CASES.map((c) => (
+            <div className={styles.caseItem} key={c.when}>
+              <p className={`${styles.caseWhen} ${styles.revealItem}`}>{c.when}</p>
+              <p className={`${styles.caseThen} ${styles.revealItem}`}>{c.then}</p>
+            </div>
+          ))}
+        </RevealPanel>
+
+        <p className={styles.demoNote}>
+          広告の飛び先として納めた LP は、まだありません。お受けした1件は、ペライチの LP を軽くして、動いていなかった計測タグを直した仕事です。CVR などの成果はお約束していません。
+        </p>
       </section>
 
       {/* ═══ 触れるデモ ═══ */}
