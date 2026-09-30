@@ -24,7 +24,7 @@ Web 制作会社さま向けに「実装だけ引き受けます」とお伝え�
 ## 使っているもの
 
 Next.js 16（App Router）/ React 19 / TypeScript / CSS Modules /
-GSAP（ScrollTrigger）/ Lenis / Cloudflare Workers
+GSAP（ScrollTrigger）/ Lenis / Cloudflare Workers / BudouX（ビルド時に日本語の語の境目へ `<wbr>` を入れる＝`components/phrase.tsx`）
 
 **画像は0枚**、**日本語 Web フォントは0KB**（OS 標準のゴシックのみ）。
 線・余白・組み方・動きだけで作っています。表示速度を売っているページなので、

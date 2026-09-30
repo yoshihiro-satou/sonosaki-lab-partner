@@ -127,7 +127,9 @@ export default function ViewportFrame({
     <div className={styles.frameWrap} ref={wrapRef}>
       <p className={styles.frameHint}>
         <span aria-hidden="true">⇤⇥</span>
-        右の取っ手を引くと、中のレイアウトが本当に組み直ります
+        {/* <wbr />＝語の境目（BudouX の位置を手で置いた・2026-09-30）。クライアント部品なので components/phrase.tsx は使えない */}
+        {/* span で包む＝この p は flex。直下に <wbr> を置くとまとまりが別々の部品になって横に並ぶ */}
+        <span>右の<wbr />取っ手を<wbr />引くと、<wbr />中の<wbr />レイアウトが<wbr />本当に<wbr />組み直ります</span>
       </p>
 
       <div className={styles.frame} ref={frameRef}>

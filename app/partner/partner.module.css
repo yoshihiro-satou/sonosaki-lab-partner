@@ -79,6 +79,25 @@
 /* 絵具が水に広がった地。components/partner/InkBackdrop.tsx が中身を描く。
    🔴 fixed＝スクロールしても動かない。水の中を降りていくように見せる。
    🔴 pointer-events: none＝クリックは全部 下の本文へ抜ける。 */
+/* 🆕 2026-09-30 語の途中で折らない。
+   このページは .page で word-break:normal にしてある＝Chrome でも auto-phrase が効かず、
+   「受託の数はま／だ並べられません」と語の途中で折れていた（Playwright で実測）。
+   page.tsx の <Phrased>（components/phrase.tsx・BudouX）が語の境目に <wbr> を入れてあるので、
+   <wbr> を持つ箱だけ keep-all にする＝<wbr>・空白・句読点でだけ折れる。全ブラウザ共通。
+   1つのまとまりが幅より長いときだけ、下の break-word で途中で折る（はみ出さない）。 */
+.page :where(p, h2, h3, h4, li, dt, dd, figcaption, blockquote, span, a, button, th, td):has(wbr) {
+  word-break: keep-all;
+  /* 🔴 anywhere ではなく break-word＝anywhere は箱の最小幅を1字にしてしまい、幅が中身で決まる箱
+     （ViewportFrame の案内など）が Firefox で1字ずつ縦に折れた（2026-09-30 実測）。
+     break-word は「はみ出すときだけ途中で折る」で、最小幅には効かない */
+  overflow-wrap: break-word;
+}
+/* 文字が直に入っている大きな箱（footer など）は、直下に <wbr> があるときだけ＝中の見本まで巻き込まない */
+.page :where(footer, div, section):has(> wbr) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 .ink {
   position: fixed;
   inset: 0;
@@ -694,6 +713,9 @@
 
 .sourceLink {
   display: inline-flex;
+  /* 🆕 2026-09-30 wrap＝スマホ幅では長い URL が横の余白を食い、ラベルが1字ずつ縦に折れていた
+     （Firefox 360px「こ／の／ペ…」・Chrome でも「このページ／のソース」）。URL は次の行へ回す */
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin-top: 24px;
@@ -701,7 +723,12 @@
   font-family: var(--mono);
   font-size: var(--t-meta);
 }
+.sourceLabel {
+  white-space: nowrap;
+}
 .sourceLink a {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--gold);
   /* 🔴 色だけで意味を伝えない（globals.css の方針）＝下線を必ず付ける */
   text-decoration: underline;

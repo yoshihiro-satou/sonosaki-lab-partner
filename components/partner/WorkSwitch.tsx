@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import styles from "@/app/partner/partner.module.css";
 
-export type Work = {
+/** T＝文の型。page.tsx は文字列（Work<string>）で書き、サーバで <wbr> 入りに区切ってから渡す */
+export type Work<T = ReactNode> = {
   id: string;
   /** タブの文字。案件の種類が一目で分かる短い言葉 */
   tab: string;
   /** 受託か自社かを隠さない。ここを曖昧にすると全部の数字が疑わしくなる */
-  kind: string;
-  title: string;
-  body: string;
+  kind: T;
+  title: T;
+  body: T;
   /** 実際に手を動かしたこと */
-  did: string[];
+  did: T[];
   /** 🔴 ここがこの部品のいちばん大事な行＝「で、御社は何を任せられるのか」 */
-  soYouCan: string;
+  soYouCan: T;
 };
 
 /**
@@ -97,8 +98,9 @@ export default function WorkSwitch({ works }: { works: Work[] }) {
 
         <p className={styles.workDidLabel}>やったこと</p>
         <ul className={styles.workDid}>
-          {current.did.map((d) => (
-            <li key={d}>{d}</li>
+          {/* key は順番＝中身は <wbr> 入りの要素（2026-09-30・page.tsx が BudouX で区切って渡す）で文字列ではない */}
+          {current.did.map((d, i) => (
+            <li key={i}>{d}</li>
           ))}
         </ul>
 

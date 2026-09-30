@@ -7,6 +7,7 @@ import ProcessDiagram from "@/components/partner/ProcessDiagram";
 import WorkSwitch, { type Work } from "@/components/partner/WorkSwitch";
 import RevealPanel from "@/components/partner/RevealPanel";
 import InkBackdrop from "@/components/partner/InkBackdrop";
+import { Phrased, phrase } from "@/components/phrase";
 
 /**
  * 制作会社さま向けページ（sonosaki-lab.com/partner）
@@ -67,7 +68,7 @@ const AD_CASES = [
 
 /* 🔴 受託か自社かを、それぞれの中で必ず名乗る。
    数が少ないのを隠すために曖昧にすると、載っている数字まで疑われる。 */
-const WORKS: Work[] = [
+const WORKS: Work<string>[] = [
   {
     id: "client",
     tab: "受託",
@@ -117,6 +118,7 @@ const WORKS: Work[] = [
 
 export default function PartnerPage() {
   return (
+    <Phrased>
     <main className={styles.page}>
       <InkBackdrop />
 
@@ -281,7 +283,17 @@ export default function PartnerPage() {
           ]}
         />
         <RevealPanel>
-          <WorkSwitch works={WORKS} />
+          {/* 切り替えはクライアント部品＝<Phrased> が届かない。渡す文をここ（サーバ）で区切ってから渡す（2026-09-30） */}
+          <WorkSwitch
+            works={WORKS.map((w) => ({
+              ...w,
+              kind: phrase(w.kind),
+              title: phrase(w.title),
+              body: phrase(w.body),
+              did: w.did.map((d, i) => phrase(d, i)),
+              soYouCan: phrase(w.soYouCan),
+            }))}
+          />
         </RevealPanel>
       </section>
 
@@ -498,7 +510,7 @@ export default function PartnerPage() {
         </p>
 
         <p className={styles.sourceLink}>
-          このページのソース：
+          <span className={styles.sourceLabel}>このページのソース：</span>
           <a
             href="https://github.com/yoshihiro-satou/sonosaki-lab-partner"
             target="_blank"
@@ -515,5 +527,6 @@ export default function PartnerPage() {
         掲載している数字は、測った日と測り方を添えています。
       </footer>
     </main>
+    </Phrased>
   );
 }
