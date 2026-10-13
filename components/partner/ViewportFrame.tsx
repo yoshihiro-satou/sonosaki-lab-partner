@@ -45,12 +45,19 @@ export default function ViewportFrame({
   const frameRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const draggingRef = useRef(false);
+  /** 一度でも人が幅を決めたか。決めるまでは、外枠の幅に付いていく */
+  const touchedRef = useRef(false);
 
   /** 幅を実際に当てる。返り値は丸めたあとの実値 */
   const applyWidth = useCallback((px: number) => {
     const frame = frameRef.current;
     const wrap = wrapRef.current;
     if (!frame || !wrap) return null;
+    /* 🆕 2026-10-13 🔴 外枠が測れない瞬間は書かない。
+       画面全体のスクリーンショットや印刷では、描き直しの途中で外枠の幅が一瞬 0 になる。
+       そのまま当てると枠が 0px に縮み、下の「縮むときだけ合わせる」決まりのせいで
+       二度と戻らなかった（全体を撮った絵で、この枠が約800pxの空白として写った）。 */
+    if (wrap.clientWidth < MIN_WIDTH) return null;
 
     const clamped = Math.round(
       Math.min(Math.max(px, MIN_WIDTH), wrap.clientWidth),
@@ -81,9 +88,11 @@ export default function ViewportFrame({
     const onResize = () => {
       const wrap = wrapRef.current;
       if (!wrap) return;
-      // 画面が縮んで枠がはみ出すときだけ縮める。
-      // 常に合わせにいくと、利用者がせっかく決めた幅を勝手に戻すことになる。
-      if (currentWidth() > wrap.clientWidth) applyWidth(wrap.clientWidth);
+      // まだ誰も触っていなければ、外枠いっぱいに付いていく（端末を横にした・窓を広げた）。
+      // 一度でも人が幅を決めたら、はみ出すときだけ縮める＝決めた幅を勝手に戻さない。
+      if (!touchedRef.current || currentWidth() > wrap.clientWidth) {
+        applyWidth(wrap.clientWidth);
+      }
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -96,6 +105,7 @@ export default function ViewportFrame({
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
     draggingRef.current = true;
+    touchedRef.current = true;
     // 🔴 掴んでいる間は transition を切る。残すと枠が指より 0.4秒 遅れて付いてきて、
     //    「重い実装」に見える。クラスの付け外しも DOM へ直接（再描画を起こさない）。
     frameRef.current?.classList.add(styles.dragging);
@@ -119,6 +129,7 @@ export default function ViewportFrame({
   const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
+    touchedRef.current = true;
     const step = (e.shiftKey ? 96 : 32) * (e.key === "ArrowLeft" ? -1 : 1);
     applyWidth(currentWidth() + step);
   };

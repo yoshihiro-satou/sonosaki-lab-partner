@@ -5,11 +5,15 @@
       本体のトップ＝お店の経営者。このページ＝実装者を審査する技術の担当者。
       同じ配色で並べると、どちらの相手にも中途半端になる。
 
-   📌 経緯＝3段階で今の形になった。
+   📌 経緯＝4段階で今の形になった。
       ① 黒地＝暗すぎると判定
       ② 濃紺＋金＋斜めストライプ＝参考にした絵から画素を取って決めた
-      ③ ③ **斜めストライプをやめ、絵具を水に落とした曲線へ。**
+      ③ **斜めストライプをやめ、絵具を水に落とした曲線へ。**
          書体を Dela Gothic One に替え、文字の階段を広げ、一覧の枠をネオン管にした。
+      ④ 🆕 2026-10-13＝**光る影（ネオン管）をやめた。金はボタンと取っ手だけ。**
+         AI 生成の UI を当てる検出器（impeccable）が、色つきの光る影を18か所・
+         細い枠＋広いぼかしの影を8か所 拾った＝「誰が作っても同じ」に見える型だった。
+         枠は線と面の明るさで分け、作品の見本（幅を引ける枠の中）だけ白く明るくした。
 
    🔴 コントラスト比は全部 WCAG 2.1 の相対輝度で実測した値（2026-09-22）。
       目分量で「たぶん読める」を通していない。
@@ -30,12 +34,15 @@
   --gold-deep: #e9a802; /* 画像そのままの金。面（帯）にだけ使い、字には使わない */
   --navy-ink: #0e1f4a; /* 金の面にのせる字。金 #f5c445 の上で 9.79:1 AAA */
   --rule: #2f5099; /* 線専用。地との差が小さいので字には使わない */
-  --rule-bright: #4a74c9; /* hover のときの線 */
+  --rule-bright: #4a74c9; /* hover のときの線・一覧の行頭の線 */
 
-  /* ネオン管の縁の光。🔴 **字の色には絶対に使わない**＝光としてだけ。
-     差し色を2本にすると、どちらも効かなくなる（強くする所は1つ）。 */
-  --neon: 143, 243, 255;
-  --neon-gold: 245, 196, 69;
+  /* 幅を引ける枠の中＝白い見本のサイト。作品を見せる場所だけ明るくする
+     （ページ全体は濃紺のまま。暗い地の上に暗い見本を置くと、作ったものが沈む）。 */
+  --paper: #ffffff;
+  --paper-sub: #f5f7fb; /* 見本の中のカード */
+  --paper-rule: #dfe5f0;
+  --paper-ink: #0e1f4a; /* 見本の見出し 対 #f5f7fb 14.91:1 */
+  --paper-muted: #3b4660; /* 見本の本文   対 #f5f7fb  8.78:1 */
 
   /* ═══ 書体 ═══
      2つだけ。役割がはっきり違うので混ざらない。
@@ -50,16 +57,17 @@
 
   /* ═══ 文字の階段 ═══
      🔴 **下限 16px**。これ未満は1か所も作らない。
-     🔴 跳ね幅を広く取る＝本文 17px に対して最大の見出しが 136px（8倍）。
+     🔴 跳ね幅を広く取る＝本文 17px に対して最大の見出しが 116px（約7倍）。
         旧は 16 → 38px の 2.4倍しかなく、どこが見出しか目で分からなかった。
-        段は 16 → 17 → 20 → 23 →（大きく飛ぶ）→ 46 → 76 →（さらに飛ぶ）→ 136。
+        🆕 2026-10-13＝136px（8倍）から 116px に下げた。最初の画面に
+        「受け取る／作る／渡す」と幅を引ける枠を並べたので、見出しだけが画面を占めないようにした。
         **小さい側は細かく、大きい側は大胆に飛ばす**（本文は読ませ、見出しは見せる）。 */
   --t-meta: 16px;
   --t-body: 17px;
   --t-lead: clamp(18px, 1.9vw, 21px);
   --t-h3: clamp(20px, 2.1vw, 23px);
   --t-h2: clamp(40px, 7vw, 76px);
-  --t-h1: clamp(52px, 12vw, 136px);
+  --t-h1: clamp(52px, 8.4vw, 116px);
 
   color: var(--text);
   font-family: var(--font);
@@ -119,11 +127,32 @@
   z-index: 1;
 }
 
-/* ═══ 最初の画面 ═══════════════════════════════════════════ */
+/* ═══ 最初の画面 ═══════════════════════════════════════════
+   🆕 2026-10-13＝左に言葉、右に幅を引ける枠の2列にした。
+   最初の5秒で「何を受け取り、何を作り、何を渡すか」と「本当にできるか」の両方に答える。
+   🔴 節（.section・1080px）より広い 1240px＝枠に 500px を取るため。
+      枠を 1080px の中に収めると 440px しか取れず、中のカードが2列になる幅を超えられない。 */
 .hero {
-  max-width: 1080px;
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 40px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: clamp(48px, 9vw, 96px) 20px clamp(32px, 6vw, 64px);
+  padding: clamp(48px, 7vw, 96px) 20px clamp(40px, 6vw, 72px);
+}
+@media (min-width: 960px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 500px);
+    column-gap: 72px;
+    align-items: center;
+    padding-inline: 40px;
+  }
+}
+.heroText {
+  min-width: 0;
+}
+.heroDemo {
+  min-width: 0;
 }
 
 /* 🎨 最初の画面の見出し＝**このページで文字がいちばん強く出る場所。**
@@ -156,22 +185,61 @@
   letter-spacing: -0.01em;
   color: var(--muted);
 }
-/* 見出しの下の金の線＝節の始まりと同じ記号。ここだけ長い */
-.heroRule {
-  width: 128px;
-  height: 6px;
-  margin: 0 0 28px;
-  border: 0;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--gold), rgba(var(--neon-gold), 0));
-}
-
 .heroLead {
-  margin: 0 0 40px;
+  margin: 0 0 28px;
   max-width: 32em;
   color: var(--text);
   font-size: var(--t-lead);
   line-height: 1.9;
+}
+
+/* 受け取る → 作る → 渡す。順番のある流れなので、上から下へ1本の線で区切って並べる。
+   🔴 番号（01/02/03）は振らない＝行の頭の動詞が、そのまま順番を言っている。 */
+.heroFlow {
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+.heroFlow > div {
+  display: grid;
+  grid-template-columns: 6em minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.heroFlow dt {
+  color: var(--text);
+  font-size: var(--t-meta);
+  font-weight: 700;
+}
+.heroFlow dd {
+  margin: 0;
+  color: #c9d6f2; /* 対 地 8.45:1 AAA＝補助文（--muted）より一段明るく。最初の画面で読ませる行 */
+  font-size: var(--t-meta);
+  line-height: 1.7;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  margin: 32px 0 0;
+}
+/* 2つ目の行き先は、ボタンにしない＝押してほしいのは1つ。下線で「リンク」だと分かるようにする */
+.heroSub {
+  color: var(--text);
+  font-size: var(--t-meta);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+.heroSub:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* 「作ったものを見る」で飛んだとき、節の見出しが画面の上端に張り付かないように */
+#works {
+  scroll-margin-top: 24px;
 }
 
 /* ═══ 触れるビューポート（このページの主役・強くする所は「取っ手ひとつ」）═══ */
@@ -184,10 +252,9 @@
   align-items: center;
   gap: 10px;
   margin: 0 0 12px;
-  color: var(--gold);
+  color: var(--muted);
   font-size: var(--t-meta);
   font-weight: 700;
-  text-shadow: 0 0 14px rgba(var(--neon-gold), 0.5);
 }
 
 /* 枠そのもの。幅は JS が --frame-w（px）で与える。
@@ -196,9 +263,10 @@
 .frame {
   position: relative;
   max-width: var(--frame-w, 100%);
-  border: 1px solid var(--rule);
   border-radius: 10px;
-  background: var(--bg-raised);
+  background: var(--paper);
+  /* 影は1枚の窓にだけ＝浮いているのはこの見本だけ。並んだカード全部に影を付けない */
+  box-shadow: 0 24px 48px rgba(5, 14, 40, 0.35);
   /* 🔴 ここが仕掛けの本体＝枠自身を「問い合わせできる箱」にする。
      中のカードはメディアクエリ（画面幅）ではなく **この枠の幅** で組み替わる。
      画面幅で組むと、枠を引いても中身が変わらず、仕掛けが成立しない。 */
@@ -219,8 +287,9 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--rule);
-  color: var(--muted);
+  border-bottom: 1px solid var(--paper-rule);
+  background: #eef1f6;
+  color: var(--paper-muted);
   font-family: var(--mono);
   font-size: var(--t-meta); /* 🔴 16px＝下限。ブラウザの枠の飾りでも小さくしない */
 }
@@ -232,11 +301,11 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--rule);
+  background: #c3cbdb;
 }
 .frameWidth {
   margin-left: auto;
-  color: var(--gold);
+  color: var(--paper-ink); /* 金は白い面の上では 1.5:1 しか出ない＝字は紺にする */
   font-variant-numeric: tabular-nums; /* 数字の幅を固定＝ドラッグ中に桁が揺れない */
 }
 
@@ -247,8 +316,11 @@
   /* 既定（枠が狭い）＝1列。狭いほうを既定にして、広いときだけ足す。 */
   grid-template-columns: 1fr;
 }
-/* 枠が 34rem を超えたら 2列。🔴 画面幅ではなく **枠幅** で判定している。 */
-@container frame (min-width: 34rem) {
+/* 枠が 26rem（416px）を超えたら 2列。🔴 画面幅ではなく **枠幅** で判定している。
+   🆕 2026-10-13＝34rem・52rem の2段から、26rem の1段にした。
+   枠を最初の画面の右の列（最大 500px）へ移したので、34rem（544px）のままだと
+   **取っ手を引いても一度も組み替わらない**＝仕掛けが成立しない（絵を作った時点で気づいた）。 */
+@container frame (min-width: 26rem) {
   .frameBody {
     grid-template-columns: 1fr 1fr;
   }
@@ -256,47 +328,34 @@
     grid-column: span 2;
   }
 }
-/* 枠が 52rem を超えたら 3列＋先頭カードを横長に。 */
-@container frame (min-width: 52rem) {
-  .frameBody {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .frameBody .cardWide {
-    grid-column: span 3;
-  }
-  /* 🔴 横長になった先頭カードの本文だけ、行の長さを抑える。
-     3列ぶん（約 970px）を端まで使うと1行 60字を超えて、目が戻る場所を見失う。
-     カード自体は広いまま＝**箱を狭めるのではなく、行を狭める。** */
-  .frameBody .cardWide p {
-    max-width: 44em;
-  }
-}
 
 .card {
   padding: 14px;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--paper-rule);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--paper-sub);
+  color: var(--paper-ink);
   /* 🖱 hover の下ごしらえ。**transform ではなく translate を単独で指定**する。
      transform にまとめると、GSAP が同じ属性を握っている要素とぶつかる。 */
-  transition: border-color 0.2s ease, translate 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, translate 0.2s ease;
 }
-/* 🖱 触れたカードだけ 2px 浮かせ、線を明るくする。
-   🔴 影を濃くしない＝斜めストライプの地に濃い影を落とすと汚れて見える。
-      浮きは「線の明るさ」で見せる。 */
+/* 🖱 触れたカードだけ 2px 浮かせ、線を濃くする。
+   🔴 影は付けない＝見本の窓にもう影がある。中のカードにまで影を重ねると、
+      どれが浮いている物なのか分からなくなる。浮きは「線の濃さ」で見せる。 */
 .card:hover {
-  border-color: var(--rule-bright);
+  border-color: #b9c4da;
   translate: 0 -2px;
-  box-shadow: 0 6px 18px rgba(11, 25, 54, 0.35);
 }
-.card h3 {
+/* .card p より強くする（同じ p なので、.card p の色と余白に負ける） */
+.card .cardTitle {
   margin: 0 0 8px;
+  color: var(--paper-ink);
   font-size: 18px;
   font-weight: 800;
 }
 .card p {
   margin: 0;
-  color: var(--muted);
+  color: var(--paper-muted);
   font-size: var(--t-meta); /* 🔴 16px＝下限 */
   line-height: 1.75;
 }
@@ -307,7 +366,10 @@
   position: absolute;
   top: 0;
   right: -7px;
-  width: 14px;
+  /* 🆕 2026-10-13＝14px から 30px に広げた。枠は overflow:hidden なので、外へはみ出した
+     半分は掴めない＝旧は**掴める所が枠の内側の 7px だけ**だった（elementFromPoint で実測）。
+     見た目（金の線と粒）は右端のまま、掴める所だけを内側へ 23px に広げている。 */
+  width: 30px;
   height: 100%;
   border: 0;
   padding: 0;
@@ -318,31 +380,37 @@
 .handle::before {
   content: "";
   position: absolute;
-  inset: 0 5px;
+  /* 線は取っ手の右端から 5px＝枠の縁にかかる 4px の線（広げる前と同じ位置） */
+  top: 0;
+  right: 5px;
+  bottom: 0;
+  width: 4px;
   border-radius: 2px;
   background: var(--gold);
 }
 .handle::after {
-  /* 掴める場所だと分かる粒。線だけだと「枠の縁」に見えて触ってもらえない。 */
+  /* 掴める場所だと分かる粒。線だけだと「枠の縁」に見えて触ってもらえない。
+     中心は取っ手の右端から 7px＝枠の縁の上（広げる前と同じ位置） */
   content: "";
   position: absolute;
   top: 50%;
-  left: 50%;
+  right: 7px;
   width: 16px;
   height: 16px;
-  transform: translate(-50%, -50%);
+  transform: translate(50%, -50%);
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 0 5px rgba(245, 196, 69, 0.2);
-  transition: box-shadow 0.18s ease, width 0.18s ease, height 0.18s ease;
+  /* 粒のまわりの淡い輪＝ぼかさない輪郭線（光らせない）。白い面の上でも粒の大きさが分かる */
+  outline: 5px solid rgba(245, 196, 69, 0.3);
+  transition: outline-width 0.18s ease, width 0.18s ease, height 0.18s ease;
 }
 /* 🖱 hover＝掴める物だと、触る前に分かるようにする。
-   粒を大きくして光の輪を広げるだけ＝位置は動かさない
+   粒と輪を大きくするだけ＝位置は動かさない
    （動かすと「掴む場所がずれた」と感じて、かえって触りにくくなる）。 */
 .handle:hover::after {
   width: 20px;
   height: 20px;
-  box-shadow: 0 0 0 9px rgba(245, 196, 69, 0.26);
+  outline-width: 9px;
 }
 .handle:focus-visible {
   outline: 2px solid var(--text);
@@ -351,7 +419,7 @@
 .handle:focus-visible::after {
   width: 20px;
   height: 20px;
-  box-shadow: 0 0 0 9px rgba(245, 196, 69, 0.26);
+  outline-width: 9px;
 }
 
 /* ═══ 節 ═══════════════════════════════════════════════════ */
@@ -370,16 +438,8 @@
   letter-spacing: -0.028em;
   text-shadow: 0 4px 22px rgba(8, 18, 48, 0.45);
 }
-/* 節の始まりの目印。最初の画面の金の線と同じ形で、短い。 */
-.sectionTitle::before {
-  content: "";
-  display: block;
-  width: 64px;
-  height: 6px;
-  margin-bottom: 20px;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--gold), rgba(var(--neon-gold), 0));
-}
+/* 🆕 2026-10-13＝節の頭の短い金の線（9本）をやめた。節の区切りは上の罫線と余白で足りる。
+   どの節にも同じ強さで付いた飾りは、目の行き先を作らない。 */
 .sectionLead {
   margin: 0 0 40px;
   max-width: 34em;
@@ -389,8 +449,9 @@
 
 /* 一文字ずつの立ち上がり。
    🔴 **最初の画面には当てない**（LCP を遅らせるため）。2画面目以降の節見出しだけ。
-   🔴 opacity ではなく「箱で切って下から押し上げる」で作る＝
-      文字は最初から不透明なので、万一 JS が来なくても**読める状態で止まる**。 */
+   🆕 2026-10-13＝**隠してから出すのをやめた。** 文字は最初から見えていて、少し下から定位置へ揃うだけ。
+      旧（箱で切って 118% 下から押し上げる）は、スクロールしないで撮った全体のスクリーンショットで
+      見出しが全部消えていた＝ページを撮って社内で回されると、空のページとして伝わる。 */
 .char {
   display: inline-block;
   /* 🔴 ここに初期位置（transform / opacity）を**書かない。**
@@ -405,13 +466,7 @@
 }
 .charLine {
   display: inline-block;
-  /* 下から押し上げる文字を、この箱の縁で切る。
-     clip は scroll を作らない hidden（枠の外に出た文字で横スクロールが出ない）。 */
-  overflow: clip;
-  /* 🔴 見出しを oblique 6deg で傾けたので、字の右上・左下が箱からわずかに出る。
-     clip のままだと**傾けた分だけ端が削れる**（「り」のハネが切れて見えた）。
-     左右だけ 0.12em 逃がす。縦は 0 のまま＝押し上げる演出はきちんと隠れる。 */
-  overflow-clip-margin: 0 0.12em;
+  /* 🆕 2026-10-13＝箱で切るのをやめた（上の理由）。文字は動く間も全部見えている。 */
   vertical-align: bottom;
 }
 
@@ -454,7 +509,7 @@
 }
 .diagram .line {
   fill: none;
-  stroke: var(--gold);
+  stroke: var(--rule-bright); /* 🆕 2026-10-13＝金から変えた。金はボタンと取っ手だけ */
   stroke-width: 2;
   stroke-linecap: round;
 }
@@ -508,14 +563,15 @@
    🔴 選択中のタブに hover を当てない＝押しても何も起きないのに
       「押せそう」に見えるのは嘘になる。 */
 .switchBtn:not([aria-selected="true"]):hover {
-  border-color: var(--gold);
+  border-color: var(--rule-bright);
   color: var(--text);
-  background: rgba(245, 196, 69, 0.1);
+  background: rgba(234, 240, 255, 0.06);
 }
+/* 選んでいるタブ＝白地に紺。🆕 2026-10-13＝金をやめた（金は「相談する」ボタンと取っ手だけ）。 */
 .switchBtn[aria-selected="true"] {
-  border-color: var(--gold);
-  background: var(--gold);
-  color: var(--navy-ink); /* 金 #f5c445 の上で 9.79:1 AAA */
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--navy-ink); /* 対 #eaf0ff 14.03:1 AAA */
   font-weight: 800;
   cursor: default;
 }
@@ -524,21 +580,10 @@
      「非同期で要素が移った」ことが伝わらない。 */
   view-transition-name: partner-work;
   padding: 26px 24px;
-  /* 一覧の枠と同じネオン管にする＝ページの中で「枠＝光る」の決まりを1本にする。
-     ここだけ別の見せ方にすると、同じ役目の箱が2種類あることになる。 */
-  border: 1px solid rgba(var(--neon-gold), 0.75);
+  /* 一覧の枠（.panel）と同じ作り＝同じ役目の箱は1種類にする。 */
+  border: 1px solid var(--rule);
   border-radius: 14px;
-  background: linear-gradient(
-    160deg,
-    rgba(14, 33, 82, 0.86),
-    rgba(8, 20, 56, 0.92)
-  );
-  box-shadow:
-    inset 0 0 34px rgba(var(--neon-gold), 0.12),
-    inset 0 1px 0 rgba(var(--neon), 0.4),
-    0 0 0 1px rgba(var(--neon-gold), 0.18),
-    0 0 30px rgba(var(--neon-gold), 0.24),
-    0 0 84px rgba(var(--neon-gold), 0.13);
+  background: rgba(234, 240, 255, 0.05);
 }
 .switchPanel h3 {
   margin: 0 0 12px;
@@ -574,52 +619,28 @@
     grid-template-columns: 1fr 1fr;
   }
 }
-/* ═══ ネオン管の枠（一覧の枠をネオン管に見せる）═══
-   🔴 ネオンは**3層でできている。** どれが欠けても看板に見えない。
-     ① 管そのもの＝細い明るい縁（border）
-     ② 管の内側に溜まる光＝inset の box-shadow
-     ③ 管のまわりへ漏れる光＝外向きの box-shadow を2段（近い強い光＋遠い淡い光）
-   🔴 光の色は**金を主、シアン白を縁の照り返し**にしている。
-      シアンを面で使うと差し色が2本になって、取っ手とボタンが効かなくなる。
-   🔴 字の色はどれも変えていない＝ネオンは光であって、可読性を削る装飾にしない。 */
+/* ═══ 一覧の枠 ═══
+   🆕 2026-10-13＝ネオン管（金の縁＋内と外へ漏れる光の5層）をやめた。
+   🔴 旧は枠の中を地より**暗く**していた＝光らせるための暗さで、字の面が沈んでいた。
+      いまは地より**少し明るい**面＋線1本。箱が地から浮くのは明るさの差だけで足りる。 */
 .panel {
   position: relative;
   padding: 26px 24px;
-  border: 1px solid rgba(var(--neon-gold), 0.75);
+  border: 1px solid var(--rule);
   border-radius: 14px;
-  /* 🔴 管の中は地より**暗く**する。明るい面にネオンを乗せても光って見えない
-     ＝光は「まわりが暗いこと」で成り立つ。 */
-  background: linear-gradient(
-    160deg,
-    rgba(14, 33, 82, 0.86),
-    rgba(8, 20, 56, 0.92)
-  );
-  box-shadow:
-    inset 0 0 34px rgba(var(--neon-gold), 0.12),
-    inset 0 1px 0 rgba(var(--neon), 0.4),
-    0 0 0 1px rgba(var(--neon-gold), 0.18),
-    0 0 30px rgba(var(--neon-gold), 0.24),
-    0 0 84px rgba(var(--neon-gold), 0.13);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  background: rgba(234, 240, 255, 0.05);
+  transition: border-color 0.25s ease;
 }
-/* 🖱 触れると管が明るくなる。位置は動かさない＝一覧を読んでいる最中に
-   箱が動くと、目で追っている行を見失う。上がるのは**光の量だけ**。 */
+/* 🖱 触れると線が明るくなる。位置は動かさない＝一覧を読んでいる最中に
+   箱が動くと、目で追っている行を見失う。 */
 .panel:hover {
-  border-color: rgba(var(--neon), 0.95);
-  box-shadow:
-    inset 0 0 44px rgba(var(--neon-gold), 0.2),
-    inset 0 1px 0 rgba(var(--neon), 0.7),
-    0 0 0 1px rgba(var(--neon-gold), 0.34),
-    0 0 44px rgba(var(--neon-gold), 0.42),
-    0 0 130px rgba(var(--neon-gold), 0.22);
+  border-color: var(--rule-bright);
 }
 .panel h3 {
   margin: 0 0 16px;
   font-size: var(--t-h3);
   font-weight: 800;
   letter-spacing: -0.01em;
-  /* 見出しの字がうっすら発光して見える＝管の中の字 */
-  text-shadow: 0 0 18px rgba(var(--neon-gold), 0.35);
 }
 /* 🔴 Tailwind の preflight が `list-style: none` を当てているので、
    ul のままでは記号が出ず「ただ字下げされた文章」に見える（2026-09-22 実画面で発見）。
@@ -650,25 +671,22 @@
   width: 14px;
   height: 2px;
   border-radius: 1px;
-  background: var(--gold);
-  box-shadow: 0 0 8px rgba(var(--neon-gold), 0.7); /* 線も光らせる＝管の一部 */
-  transition: width 0.22s ease, box-shadow 0.22s ease;
+  background: var(--rule-bright); /* 🆕 2026-10-13＝金から変えた。行頭の印は目立たなくてよい */
+  transition: width 0.22s ease;
 }
-/* 🖱 行に触れると、金の線が伸びて強く光る。
+/* 🖱 行に触れると、行頭の線が伸びる。
    🔴 行そのものは動かさない＝一覧の中で1行だけ動くと、読んでいる位置を見失う。 */
 .panel li:hover::before {
   width: 22px;
-  box-shadow: 0 0 16px rgba(var(--neon-gold), 1);
 }
 .panel li:hover {
   color: var(--text);
 }
 
 /* ふわっと出るリスト。
-   🔴 初期位置は CSS に書かない。JS が「動かせる」と確かめてから gsap.set で隠す。
-      CSS で隠すと、JS が落ちた端末で**中身が永久に見えない**＝
-      「できること・できないこと」が消えるのは、このページでは致命的。
-   ⇒ 何も起きなければ、ただの読める一覧として残る。 */
+   🔴 初期位置は CSS に書かない。JS が「動かせる」と確かめてから gsap.set で付ける。
+   🆕 2026-10-13＝**透明にはしない。** 少し下から定位置へ揃うだけ（components/partner/RevealPanel.tsx）。
+      透明から出す作りは、スクロールしないで撮った全体のスクリーンショットで一覧が全部消えていた。 */
 .revealItem {
   /* 意図的に空。JS が触る対象を指すための目印だけ。 */
 }
@@ -729,7 +747,7 @@
 .sourceLink a {
   min-width: 0;
   overflow-wrap: anywhere;
-  color: var(--gold);
+  color: var(--text); /* 🆕 2026-10-13＝金から変えた。リンクは下線で分かる */
   /* 🔴 色だけで意味を伝えない（globals.css の方針）＝下線を必ず付ける */
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -737,7 +755,6 @@
   transition: text-decoration-thickness 0.15s ease, color 0.15s ease;
 }
 .sourceLink a:hover {
-  color: #ffd76b;
   text-decoration-thickness: 2px;
 }
 .foot {
@@ -749,100 +766,19 @@
   font-size: var(--t-meta);
 }
 
-/* ═══ ネオン管が点く ═══
-   🔴 **演出は1か所にまとめる**（各要素にフェードを散らさない）。
-      枠が視界に入る → 管が2回 瞬いてから灯る → そのあと行が立ち上がる、の一続き。
-      本物のネオンは、点く瞬間に必ず一度 ためらう。そこを写している。
-
-   🔴 消えている状態（.panelOff）を CSS の初期値にしない。
-      JS が「これから動かせる」と確かめてから付ける＝
-      JS が落ちた端末では、最初から灯った状態の枠が出る。 */
-.panelOff {
-  border-color: rgba(var(--neon-gold), 0.14);
-  box-shadow:
-    inset 0 0 10px rgba(var(--neon-gold), 0.02),
-    0 0 0 1px rgba(var(--neon-gold), 0.04);
-}
-.panelOn {
-  /* 🔴 `steps()` を使わない。
-     段階関数は「最後の区間の開始値」を保持するので、**終わったときに
-     100% の値にならない**（実測＝灯り切ったはずの枠が border 0.18 のままだった）。
-     瞬きの角は、キーフレームを 0.5% 隣に置いて作る＝値が変わる瞬間だけ急になる。 */
-  animation: neonOn 0.8s ease-out forwards;
-}
-@keyframes neonOn {
-  0%,
-  9% {
-    border-color: rgba(var(--neon-gold), 0.12);
-    box-shadow: inset 0 0 10px rgba(var(--neon-gold), 0.02);
-  }
-  /* 一瞬 灯って…… */
-  9.5%,
-  17% {
-    border-color: rgba(var(--neon-gold), 1);
-    box-shadow:
-      inset 0 0 40px rgba(var(--neon-gold), 0.22),
-      0 0 40px rgba(var(--neon-gold), 0.42),
-      0 0 90px rgba(var(--neon-gold), 0.2);
-  }
-  /* …落ちて…… */
-  17.5%,
-  27% {
-    border-color: rgba(var(--neon-gold), 0.14);
-    box-shadow: inset 0 0 10px rgba(var(--neon-gold), 0.03);
-  }
-  /* …もう一度、今度は強く瞬いて…… */
-  27.5%,
-  38% {
-    border-color: rgba(var(--neon), 1);
-    box-shadow:
-      inset 0 0 48px rgba(var(--neon-gold), 0.28),
-      0 0 54px rgba(var(--neon-gold), 0.55),
-      0 0 120px rgba(var(--neon-gold), 0.28);
-  }
-  /* …一度 沈んでから…… */
-  38.5%,
-  46% {
-    border-color: rgba(var(--neon-gold), 0.26);
-    box-shadow: inset 0 0 14px rgba(var(--neon-gold), 0.05);
-  }
-  /* …安定して灯る（= .panel の既定の光と同じ値で終わる） */
-  100% {
-    border-color: rgba(var(--neon-gold), 0.75);
-    box-shadow:
-      inset 0 0 34px rgba(var(--neon-gold), 0.12),
-      inset 0 1px 0 rgba(var(--neon), 0.4),
-      0 0 0 1px rgba(var(--neon-gold), 0.18),
-      0 0 30px rgba(var(--neon-gold), 0.24),
-      0 0 84px rgba(var(--neon-gold), 0.13);
-  }
-}
-/* 🔴 明滅は、光に過敏な人には負担になる。動きを切る設定のときは
-   瞬かせず、最初から灯った状態で出す。 */
-@media (prefers-reduced-motion: reduce) {
-  .panelOff,
-  .panelOn {
-    animation: none;
-    border-color: rgba(var(--neon-gold), 0.75);
-    box-shadow:
-      inset 0 0 34px rgba(var(--neon-gold), 0.12),
-      0 0 30px rgba(var(--neon-gold), 0.24);
-  }
-}
-
 /* ═══ こんなときに呼んでください ═══════════════════════════
    🔴 番号（01 / 02 / 03）を振らない。**順番のあるものではない**ので、
       振ると「手順」に読めてしまう。並列は線で示す。 */
 .caseList {
   display: grid;
   gap: 0;
-  border-top: 1px solid rgba(var(--neon-gold), 0.26);
+  border-top: 1px solid var(--rule);
 }
 .caseItem {
   display: grid;
   gap: 4px 32px;
   padding: 22px 4px;
-  border-bottom: 1px solid rgba(var(--neon-gold), 0.26);
+  border-bottom: 1px solid var(--rule);
   align-items: baseline;
 }
 @media (min-width: 760px) {
@@ -858,7 +794,7 @@
   line-height: 1.5;
   color: var(--text);
 }
-/* 場面の頭に「・」も番号も付けず、金の縦線だけ立てる */
+/* 場面の頭に「・」も番号も付けず、縦線だけ立てる（🆕 2026-10-13＝金から変えた・光らせない） */
 .caseWhen::before {
   content: "";
   display: inline-block;
@@ -867,8 +803,7 @@
   margin-right: 12px;
   vertical-align: -0.08em;
   border-radius: 2px;
-  background: var(--gold);
-  box-shadow: 0 0 10px rgba(var(--neon-gold), 0.7);
+  background: var(--rule-bright);
 }
 .caseThen {
   margin: 0;
@@ -886,21 +821,27 @@
   font-size: var(--t-body);
 }
 .demoNote b {
-  color: var(--gold);
+  color: var(--text);
   font-weight: 800;
+}
+/* 最初の画面の枠の下の一言＝列の幅に合わせる（34em だと右の列からはみ出す） */
+.heroDemo .demoNote {
+  margin-top: 16px;
+  max-width: none;
+  font-size: var(--t-meta);
 }
 
 /* 枠の中の見本＝架空の店舗サイト。小さな添え字で「架空」と断る */
-.mockEyebrow {
+.card .mockEyebrow {
   margin: 0 0 6px;
-  color: var(--muted);
+  color: #4a5468; /* 対 #f5f7fb 7.18:1 AAA */
   font-size: var(--t-meta);
 }
 
 /* ═══ 作ったもの ═══════════════════════════════════════ */
 .workKind {
   margin: 0 0 8px;
-  color: var(--gold);
+  color: var(--muted);
   font-size: var(--t-meta);
   font-weight: 700;
 }
@@ -937,16 +878,15 @@
   width: 14px;
   height: 2px;
   border-radius: 1px;
-  background: var(--gold);
-  box-shadow: 0 0 8px rgba(var(--neon-gold), 0.7);
+  background: var(--rule-bright);
 }
-/* 🔴 この節でいちばん読ませたい一行。ここだけ字を大きくして囲む。 */
+/* 🔴 この節でいちばん読ませたい一行。ここだけ字を大きくする。
+   🆕 2026-10-13＝枠で囲むのをやめた（枠の中に枠＝箱の入れ子。検出器が「カードの中のカード」と拾った）。
+      上に1本の線を引いて区切り、字の大きさで強さを出す。 */
 .workSoYouCan {
   margin: 0;
-  padding: 18px 20px;
-  border-left: 4px solid var(--gold);
-  border-radius: 0 8px 8px 0;
-  background: rgba(var(--neon-gold), 0.08);
+  padding: 18px 0 0;
+  border-top: 1px solid var(--rule);
   color: var(--text);
   font-size: var(--t-h3);
   font-weight: 800;
@@ -969,5 +909,15 @@
 }
 
 .ctaWrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
   margin: 40px 0 0;
+}
+/* ボタンを押すと何が起きるかを、押す前に一言（作ったものの直後の問い合わせ） */
+.ctaNote {
+  max-width: 34em;
+  color: var(--muted);
+  font-size: var(--t-meta);
 }

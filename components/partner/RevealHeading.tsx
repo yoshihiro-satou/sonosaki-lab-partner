@@ -5,7 +5,12 @@ import { loadGsap, prefersReducedMotion } from "@/lib/gsap-lazy";
 import styles from "@/app/partner/partner.module.css";
 
 /**
- * 節見出しを、一文字ずつ下から押し上げて出す。
+ * 節見出しを、一文字ずつ少し下から定位置へ揃える。
+ *
+ * 🆕 2026-10-13＝**隠してから出すのをやめた。**
+ *    旧は文字を箱で切って 118% 下に沈め、そこから押し上げていた。スクロールしないで撮った
+ *    全体のスクリーンショットでは、2画面目から下の見出しが全部消えて写った。
+ *    いまは 22% だけ下げた位置から揃える＝動いている間も、撮られた瞬間も、字は全部読める。
  *
  * 🔴🔴 **最初の画面（Hero）には絶対に使わない。**
  *    ここが LCP（最大要素の表示）になるページでは、文字を隠して始めると
@@ -22,8 +27,8 @@ import styles from "@/app/partner/partner.module.css";
  *      おまけに **プラグインが1つ増えない**（速度を売る画面なので、載せる物は減らす）。
  *
  * 🔴 なぜ CSS に初期位置を書かないのか＝
- *    CSS で隠すと、JS が落ちた端末で見出しが**永久に消える**。
- *    隠すのは「これから動かせる」と確かめた後（gsap.set）だけにする。
+ *    CSS でずらすと、JS が落ちた端末で見出しが**ずれたまま止まる**。
+ *    ずらすのは「これから動かせる」と確かめた後（gsap.set）だけにする。
  *    ⇒ 何も起きなければ、ただの読める見出しとして残る（壊れ方を軽いほうに倒す）。
  *
  * 🔴 なぜ単語ではなく1文字ずつか＝日本語には分かち書きが無く、
@@ -64,12 +69,12 @@ export default function RevealHeading({
         );
         if (!chars.length) return;
 
-        // ここで初めて隠す（上のコメントの理由）
-        gsap.set(chars, { yPercent: 118 });
+        // ここで初めてずらす（上のコメントの理由）。隠さない＝透明にも、箱の外にも出さない
+        gsap.set(chars, { yPercent: 22 });
 
         const tween = gsap.to(chars, {
           yPercent: 0,
-          duration: 0.62,
+          duration: 0.8,
           ease: "power3.out",
           // 🔴 1文字ごとの遅れは 26ms。40ms を超えると長い見出しで
           //    最後の文字が着くまでに1秒以上かかり、読み始めを待たせる。
@@ -126,7 +131,7 @@ export default function RevealHeading({
        「せ・い・さ・く」と区切って発音する（動きのために中身を割った副作用）。
        中の span は aria-hidden にして、読まれるのは label の1本だけにする。 */
     <Tag className={className} ref={ref} aria-label={label}>
-      {/* 見出し全体を1つの箱で切る。箱が無いと、押し上げる前の文字が上の行にはみ出す */}
+      {/* 見出し全体を1つの箱にまとめる（2026-10-13 までは、この箱で文字を切って隠していた） */}
       <span className={styles.charLine} aria-hidden="true">
         {phrases.length > 1
           ? phrases.map((ph, j) => (

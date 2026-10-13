@@ -153,21 +153,93 @@ export default function PartnerPage() {
             "演出を入れるかどうかではなく、どこに入れないかを決めるほうが効きます。",
           ]}
         />
-        <h1 className={styles.heroTitle}>
-          <span className={styles.heroTitleLead}>デザインは、御社のまま。</span>
-          {/* 🔴 読点で自分で折る。136px で10字を1行に置くと 1360px 必要で、
-              1040px の枠からはみ出して「こち／らで。」と語の途中で折れる
-              （2026-09-22 に実画面で確認）。大きさを守って、折る位置を選ぶ。 */}
-          実装だけ、
-          <br />
-          こちらで。
-        </h1>
-        <hr className={styles.heroRule} />
-        <p className={styles.heroLead}>
-          Web 制作会社・デザイン会社さま向けの、フロントエンド実装パートナーです。
-          既存サイトの改修、アニメーション、レスポンシブ対応まで、
-          実装の工程をお引き受けします。
-        </p>
+        <SourceNote
+          title="最初の画面に、幅を引ける枠を置いている理由"
+          lines={[
+            "「レスポンシブ対応できます」と書くより、枠を引いて中が組み直るのを",
+            "見てもらうほうが早いからです。主張ではなく挙動で答えます。",
+            "",
+            "枠の幅は「人が決めた入力値」で、監視する対象ではありません。",
+            "ResizeObserver で追うと、指が動く → 枠が変わる → 観測が発火 → 再描画、と",
+            "1フレーム余分に挟まり、枠が指から遅れて付いてきます。",
+            "そこで pointer イベントの座標から幅を出し、同じフレームで反映しています。",
+            "",
+            "中のカードはメディアクエリではなく Container Queries で組み替えています。",
+            "画面幅で判定すると、枠を引いても中身が変わらず、仕掛けが成立しません。",
+          ]}
+        />
+        <div className={styles.heroText}>
+          <h1 className={styles.heroTitle}>
+            <span className={styles.heroTitleLead}>デザインは、御社のまま。</span>
+            {/* 🔴 読点で自分で折る。見出しの最大 116px で10字を1行に置くと 1160px 必要で、
+                左の列からはみ出して「こち／らで。」と語の途中で折れる
+                （2026-09-22 に 136px で実画面を確認・10-13 に左右2列へ組み替え）。 */}
+            実装だけ、
+            <br />
+            こちらで。
+          </h1>
+          <p className={styles.heroLead}>
+            Web 制作会社・デザイン会社さま向けの、フロントエンド実装パートナーです。
+            既存サイトの改修、アニメーション、レスポンシブ対応まで、
+            実装の工程をお引き受けします。
+          </p>
+          {/* 受け取る → 作る → 渡す は順番のある流れ＝並べ方そのものが情報。
+              技術名をタグで並べる形にしない（どの画面でも見る形で、何を任せられるかが伝わらない）。 */}
+          <dl className={styles.heroFlow}>
+            <div>
+              <dt>受け取る</dt>
+              <dd>Figma などのデザインデータ、既存サイトのリポジトリ</dd>
+            </div>
+            <div>
+              <dt>作る</dt>
+              <dd>
+                Next.js、React、TypeScript での実装。GSAP と CSS の動き、レスポンシブ、表示速度の調整まで
+              </dd>
+            </div>
+            <div>
+              <dt>渡す</dt>
+              <dd>そのままマージできる Pull Request と、直した箇所の説明</dd>
+            </div>
+          </dl>
+          <p className={styles.heroActions}>
+            <a className={styles.cta} href="mailto:yoshihirock0710@gmail.com">
+              実装の相談をする
+            </a>
+            <a className={styles.heroSub} href="#works">
+              作ったものを見る
+            </a>
+          </p>
+        </div>
+
+        <div className={styles.heroDemo}>
+          <ViewportFrame>
+            {/* 🔴 枠の中は「解説」ではなく「実際のサイトらしい中身」を置く。
+               説明文を並べると、デモが技術の講義になる。見せたいのは挙動のほう。
+               🔴 最初の画面なので隠してから出す動きは付けない（revealItem を付けない）。
+               🔴 カードの見出しは h3 にしない＝見本のサイトの見出しが、このページの目次（h1 の次）に混ざる。 */}
+            <div className={`${styles.card} ${styles.cardWide}`}>
+              <p className={styles.mockEyebrow}>架空の店舗サイト</p>
+              <p className={styles.cardTitle}>髪を切るだけの場所にしない</p>
+              <p>駅から歩いて3分。予約は前日まで受け付けています。</p>
+            </div>
+            <div className={styles.card}>
+              <p className={styles.cardTitle}>メニューと料金</p>
+              <p>カット ¥4,800／カラー ¥7,200／トリートメント ¥3,000</p>
+            </div>
+            <div className={styles.card}>
+              <p className={styles.cardTitle}>アクセス</p>
+              <p>宮城県大崎市◯◯ 1-2-3／水曜定休／10:00〜19:00</p>
+            </div>
+            <div className={styles.card}>
+              <p className={styles.cardTitle}>ご予約</p>
+              <p>電話、LINE、フォームのどれでも受け付けています。</p>
+            </div>
+          </ViewportFrame>
+          <p className={styles.demoNote}>
+            画面の幅ではなく、<b>枠そのものの幅</b>でレイアウトを切り替えています。
+            ブラウザの窓は動かしていません。
+          </p>
+        </div>
       </section>
 
       {/* ═══ こんなときに ═══ */}
@@ -214,55 +286,9 @@ export default function PartnerPage() {
         </p>
       </section>
 
-      {/* ═══ 触れるデモ ═══ */}
-      <section className={styles.section}>
-        <RevealHeading className={styles.sectionTitle} text="触って|みてください" />
-
-        <SourceNote
-          title="幅を引ける枠：なぜ ResizeObserver ではなく pointer イベントか"
-          lines={[
-            "枠の幅は「人が決めた入力値」で、監視する対象ではありません。",
-            "ResizeObserver で追うと、指が動く → 枠が変わる → 観測が発火 → 再描画、と",
-            "1フレーム余分に挟まり、枠が指から遅れて付いてきます。",
-            "このページでは、その遅れがそのまま「実装が重い人」の印象になります。",
-            "",
-            "中のカードはメディアクエリではなく Container Queries で組み替えています。",
-            "画面幅で判定すると、枠を引いても中身が変わらず、仕掛けが成立しません。",
-          ]}
-        />
-
-        <RevealPanel>
-          <ViewportFrame>
-          {/* 🔴 枠の中は「解説」ではなく「実際のサイトらしい中身」を置く。
-             説明文を並べると、デモが技術の講義になる。見せたいのは挙動のほう。 */}
-          <div className={`${styles.card} ${styles.cardWide} ${styles.revealItem}`}>
-            <p className={styles.mockEyebrow}>架空の店舗サイト</p>
-            <h3>髪を切るだけの場所にしない</h3>
-            <p>駅から歩いて3分。予約は前日まで受け付けています。</p>
-          </div>
-          <div className={`${styles.card} ${styles.revealItem}`}>
-            <h3>メニューと料金</h3>
-            <p>カット ¥4,800／カラー ¥7,200／トリートメント ¥3,000</p>
-          </div>
-          <div className={`${styles.card} ${styles.revealItem}`}>
-            <h3>アクセス</h3>
-            <p>宮城県大崎市◯◯ 1-2-3／水曜定休／10:00〜19:00</p>
-          </div>
-          <div className={`${styles.card} ${styles.revealItem}`}>
-            <h3>ご予約</h3>
-            <p>電話、LINE、フォームのどれでも受け付けています。</p>
-          </div>
-          </ViewportFrame>
-        </RevealPanel>
-
-        <p className={styles.demoNote}>
-          画面の幅ではなく、<b>枠そのものの幅</b>でレイアウトを切り替えています。
-          ブラウザの窓は動かしていません。
-        </p>
-      </section>
-
-      {/* ═══ 作ったもの ═══ */}
-      <section className={styles.section}>
+      {/* ═══ 作ったもの ═══
+          id＝最初の画面の「作ったものを見る」の飛び先 */}
+      <section className={styles.section} id="works">
         <RevealHeading className={styles.sectionTitle} text="作ったもの" />
         <p className={styles.sectionLead}>受託か自社かは、それぞれに書いています。</p>
 
@@ -295,6 +321,17 @@ export default function PartnerPage() {
             }))}
           />
         </RevealPanel>
+
+        {/* 実績を読み終えた所が、いちばん相談したくなる所。ページの末尾まで待たせない。
+            ボタンの名前は最初の画面・末尾と同じにする（同じ動作は同じ名前）。 */}
+        <p className={styles.ctaWrap}>
+          <span className={styles.ctaNote}>
+            デザインか既存のリポジトリを見せていただければ、範囲と金額をお返しします。
+          </span>
+          <a className={styles.cta} href="mailto:yoshihirock0710@gmail.com">
+            実装の相談をする
+          </a>
+        </p>
       </section>
 
       {/* ═══ 役割の分け方 ═══ */}
@@ -312,9 +349,12 @@ export default function PartnerPage() {
             "代わりに、文字の分割は JSX 側（サーバ描画の時点）で済ませています。",
             "React が最初から所有している DOM なので、誰も横取りしません。",
             "",
-            "初期状態（隠れた位置）は CSS に書かず、JS が動くと確かめてから付けます。",
-            "CSS で隠すと、JS が落ちた端末で見出しが永久に消えるためです。",
-            "壊れるときは、軽いほうに壊れてほしい。",
+            "文字は隠していません。少し下から定位置へ揃えるだけです。",
+            "以前は透明や枠の外から出していましたが、スクロールせずに撮った",
+            "全体のスクリーンショットでは、見出しも一覧も消えて写りました。",
+            "このページは撮られて社内で回されることがあるので、どの瞬間を撮られても",
+            "読める作りにしています。ずらす初期位置も CSS には書かず、JS が動くと",
+            "確かめてから付けます。壊れるときは、軽いほうに壊れてほしい。",
           ]}
         />
 
@@ -354,7 +394,7 @@ export default function PartnerPage() {
       <section className={styles.section}>
         <RevealHeading
           className={styles.sectionTitle}
-          text="御社の開発フローに戻しやすい形で渡します"
+          text="御社の開発フローに|戻しやすい形で|渡します"
         />
         <p className={styles.sectionLead}>
           自社のサイトは、ブランチと Pull Request で作っています。

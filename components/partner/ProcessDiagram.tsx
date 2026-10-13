@@ -66,34 +66,32 @@ export default function ProcessDiagram() {
         if (!visible) return;
 
         const lines = visible.querySelectorAll<SVGPathElement>(`.${styles.line}`);
-        const boxes = visible.querySelectorAll<SVGGElement>("[data-step]");
         if (!lines.length) return;
 
         lines.forEach((l) => {
           const len = l.getTotalLength();
           gsap.set(l, { strokeDasharray: len, strokeDashoffset: len });
         });
-        gsap.set(boxes, { opacity: 0.25 });
+        /* 🆕 2026-10-13＝箱は薄くしない（旧は opacity 0.25 から立てていた）。
+           スクロールしないで撮った全体のスクリーンショットで、工程の名前が読めなかった。
+           箱の文字は最初から読める＝動くのは、箱と箱をつなぐ線だけ。 */
 
         const tl = gsap.timeline({
           scrollTrigger: { trigger: visible, start: "top 78%", once: true },
         });
-        // 線を引く → その先の箱が立つ、を繰り返す。
-        // 箱を先に出すと「順番に進む工程」に見えず、ただ並んでいるだけになる。
-        tl.to(boxes[0], { opacity: 1, duration: 0.3 }, 0);
+        // 線を左から順に引く＝「順番に進む工程」であることを、線の向きで見せる。
         lines.forEach((l, i) => {
           tl.to(
             l,
             { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" },
             i * 0.34,
-          ).to(boxes[i + 1], { opacity: 1, duration: 0.3 }, i * 0.34 + 0.32);
+          );
         });
 
         cleanup = () => {
           tl.scrollTrigger?.kill();
           tl.kill();
           gsap.set(lines, { clearProps: "all" });
-          gsap.set(boxes, { clearProps: "opacity" });
           ScrollTrigger.refresh();
         };
       })
